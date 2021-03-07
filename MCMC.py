@@ -40,7 +40,7 @@ def dH(spins, i, j):
         jnew = j + dj
         if inew in range(m) and jnew in range(n):
             H -= s * spins[i + di, j + dj]
-            H_new += s * spins[i + di, j + dj] # because s because -s and the Hamiltonian has a "-" sign    
+            H_new += s * spins[i + di, j + dj] # because s because -s and the Hamiltonian has a "-" sign
     return H_new - H
 
 # Metropolis-Hastings algorithm for MCMC method
@@ -58,14 +58,13 @@ def MH(n, T, steps):
                         spins[i, j] = - spins[i, j]
     return spins
 
-
-# Now we create a loop which samples sz spin configurations for a n*n lattice 
+# Now we create a loop which samples sz spin configurations for a n*n lattice
 # for a range of temperatures which starts at 1 and ends at 3.5 with nt intervals
 # the number of iterations taken to reach the final configurations is itr
 n = 6
 N = n*n
 sz = 100
-nt = 10
+nt = 20
 itr = 100
 T_range = np.linspace(1, 3.5, nt)
 # Below are the functions for different thermodynamic properties
@@ -90,22 +89,29 @@ for i in range(nt):
         m = Mag(conf)
         E1 += h / sz
         E2 += h*h / sz
-        M1 += m / sz
+        M1 += abs(m) / sz
         M2 += m*m / sz
     E[i] = E1 / N
     M[i] = M1 / N
     Cv[i] = (E2 - E1 * E1) / (N * t * t)
     X[i] = (M2 - M1 * M1) / (N * t)
-    
+
 plt.figure(1)
 plt.scatter(T_range, E)
+plt.xlabel("Temperature (T)", fontsize=20)
+plt.ylabel("Energy", fontsize=20)
 
 plt.figure(2)
 plt.scatter(T_range, M)
+plt.xlabel("Temperature (T)", fontsize=20)
+plt.ylabel("Magnetisation", fontsize=20)
 
 plt.figure(3)
 plt.scatter(T_range, Cv)
+plt.xlabel("Temperature (T)", fontsize=20)
+plt.ylabel("Specific Heat", fontsize=20)
 
 plt.figure(4)
 plt.scatter(T_range, X)
-
+plt.xlabel("Temperature (T)", fontsize=20)
+plt.ylabel("Magnetic Susceptibility", fontsize=20)
