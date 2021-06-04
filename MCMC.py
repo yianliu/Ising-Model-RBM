@@ -87,10 +87,30 @@ eqsteps = 100
 mcsteps = 100
 
 # Below are the functions for different thermodynamic properties
-M = np.zeros((nt,sz)) # Magnetisation per spin
-E = np.zeros((nt,sz)) # Energy per spin
-Cv = np.zeros(nt) # Specific Heat
-X = np.zeros(nt) # Magnetic Susceptibility
+
+# Magnetisation per spin
+M = np.zeros((nt,sz)) # for all configurations
+M_mean = np.zeros(nt)
+M_err = np.zeros(nt)
+M2 = np.zeros((nt,sz)) # magnetisation per spin squared
+M2_mean = np.zeros(nt)
+M2_err = np.zeros(nt)
+
+# Energy per spin
+E = np.zeros((nt,sz)) # for all configurations
+E_mean = np.zeros(nt)
+E_err = np.zeros(nt)
+E2 = np.zeros((nt,sz)) # energy per spin sqaured
+E2_mean = np.zeros(nt)
+E2_err = np.zeros(nt)
+
+# Specific Heat
+Cv_mean = np.zeros(nt)
+Cv_err = np.zeros(nt)
+
+# Magnetic Susceptibility
+X_mean = np.zeros(nt)
+X_err = np.zeros(nt)
 
 # Mag is a function which takes a configuration and returns the total magnetisation
 # of the entire lattice
@@ -98,30 +118,63 @@ def Mag(spins):
     mag = np.sum(spins)
     return mag
 
+# error is a function which calculates the standard error of a list of values
+def error(lst):
+    return np.std(lst, ddof = 1) / np.sqrt(np.size(lst))
+
 for i in range(nt):
     T = T_range[i]
     samples = MCsample(n, T, sz, eqsteps, mcsteps)
     confgs.append(copy.deepcopy(samples))
+
+np.save("configurations.npy", confgs)
+confgs = np.load("configurations.npy")
+# Below are the calculations of thermodynamic properties
+for i in range(nt):
+    T = T_range[i]
+    samples = confgs[i]
     for j in range(sz):
         spins = samples[j]
         N = spins.size
-        M[i, j] = abs(Mag(spins))/N
-        E[i, j] = H(spins)/N
+        m = abs(Mag(spins))/N
+        h = H(spins)/N
+        M[i, j] = m
+        E[i, j] = h
+        M2[i, j] = m*m
+        E2[i, j] = h*h
+    E_mean[i] = np.mean(E[i])
+    E_err[i] = error(E[i])
+    E2_mean[i] = np.mean(E2[i])
+    E2_err[i] = error(E2[i])
+    M_mean[i] = np.mean(M[i])
+    M_err[i] = error(M[i])
+    M2_mean[i] = np.mean(M2[i])
+    M2_err[i] = error(M2[i])
+    #Cv_mean[i] = (E2_mean[i] - E_mean[i]**2) / (N * T**2)
+    #Cv_err[i] = (E2_err[i] - 2 * E_mean[i] * E_err[i]) / (N * T**2)
+    #X_mean[i] = (M2_mean[i] - M_mean[i]**2) / (N * T)
+    #X_err[i] = (M2_err[i] - 2 * M_mean[i] * M_err[i]) / (N * T)
+    Cv_mean[i] = (E2_mean[i] - E_mean[i]**2)*N / ( T**2)
+    Cv_err[i] = (E2_err[i] - 2 * E_mean[i] * E_err[i]) *N/ ( T**2)
+    X_mean[i] = (M2_mean[i] - M_mean[i]**2) *N/ ( T)
+    X_err[i] = (M2_err[i] - 2 * M_mean[i] * M_err[i])*N / (T)
 
-E_mean = []
-E_std = []
-for i in E:
-    E_mean.append(np.mean(i))
-    E_std.append(np.std(i))
+plt.xlabel('Temperature')
+plt.ylabel('E')
+plt.errorbar(T_range, E_mean, yerr=E_err, xerr=None)
+plt.show()
 
-M_mean = []
-M_std = []
-for i in M:
-    M_mean.append(np.mean(i))
-    M_std.append(np.std(i))
+plt.xlabel('Temperature')
+plt.ylabel('M')
+plt.errorbar(T_range, M_mean, yerr=M_err, xerr=None)
+plt.show()
 
-plt.plot(M_mean)
-np.save("configurations.npy", confgs)
-a = np.load("configurations.npy")
-print(a)
-a.shape
+plt.xlabel('Temperature')
+plt.ylabel('Cv')
+plt.errorbar(T_range, Cv_mean, yerr=Cv_err, xerr=None)
+plt.show()
+
+plt.xlabel('Temperature')
+plt.ylabel('X')
+plt.errorbar(T_range, X_mean, yerr=X_err, xerr=None)
+plt.show()
