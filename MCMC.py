@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 """
 Created on Tue Mar  2 17:05:31 2021
 
@@ -7,6 +7,7 @@ Created on Tue Mar  2 17:05:31 2021
 
 import numpy as np
 import matplotlib.pyplot as plt
+import copy
 
 # Hamiltonian of a simple 2D lattice with configuration spins (ndarray) and coupling coefficient J = 1
 def H(spins):
@@ -58,80 +59,69 @@ def MH(spins, T, steps):
                         spins[i, j] = - spins[i, j]
     return spins
 
-# Now we create a loop which samples sz spin configurations for a n*n lattice
-# for a range of temperatures which starts at 1 and ends at 3.5 with nt intervals
-# the number of iterations taken to reach the first configuration is eqsteps
-# and the number of iterations between two configurations is mcsteps
-n = 6
-N = n*n
-sz = 100
-nt = 20
-eqsteps = 100
-mcsteps = 100
-T_range = np.linspace(1, 3.5, nt)
-# Below are the functions for different thermodynamic properties
-M = np.zeros((nt,sz)) # Magnetisation
-E = np.zeros((nt,sz)) # Energy
-Cv = np.zeros((nt,sz)) # Specific Heat
-X = np.zeros((nt,sz)) # Magnetic Susceptibility
-
-def Mag(spins):
-    mag = np.sum(spins) / N
-    return mag
-
+# MCsample is a function whichh generates sz configurations which mimics the
+# behaviour of spins of a n*n lattice at temperature T. The first configuration
+# is sampled after eqsteps and after that the interval between two configurations
+# is mcsteps
 def MCsample(n, T, sz, eqsteps, mcsteps):
     inits = rdspins(n)
-    snapshots = []
     spins = MH(inits, T, eqsteps)
+    snapshots = [copy.deepcopy(spins)]
     for i in range(sz - 1):
         spins = MH(spins, T, mcsteps)
-        print(snapshots)
-        snapshots.append(spins)
-        print(snapshots)
-    #return snapshots
-MCsample(6,2.5,3,100,100)
+        snapshots.append(copy.deepcopy(spins))
+    return snapshots
 
+# T_range contains nt evenly spaced temperature points between 1 and 3.5
+nt = 20
+T_range = np.linspace(1, 3.5, nt)
 
+# Below are the parameters (n: square lattice length; sz: size of dataset at
+# each temperaturevalue; eqsteps: steps taken to reach equilibrium; mcsteps:
+# number of intervals between configurations) used to build a list confgs where
+# each element of the list is sz configurations at the corresponding temperature
+confgs = []
+n = 6
+sz = 200
+eqsteps = 100
+mcsteps = 100
+
+# Below are the functions for different thermodynamic properties
+M = np.zeros((nt,sz)) # Magnetisation per spin
+E = np.zeros((nt,sz)) # Energy per spin
+Cv = np.zeros(nt) # Specific Heat
+X = np.zeros(nt) # Magnetic Susceptibility
+
+# Mag is a function which takes a configuration and returns the total magnetisation
+# of the entire lattice
+def Mag(spins):
+    mag = np.sum(spins)
+    return mag
 
 for i in range(nt):
-    t = T_range[i]
-    E1 = 0
-    E2 = 0
-    M1 = 0
-    M2 = 0
-    for sp in range (sz):
-        conf = MH(n, t, itr)
-        h = H(conf)
-        m = Mag(conf)
-        E1 += h / sz
-        E2 += h*h / sz
-        M1 += abs(m) / sz
-        M2 += m*m / sz
-    E[i] = E1 / N
-    M[i] = M1 / N
-    Cv[i] = (E2 - E1 * E1) / (N * t * t)
-    X[i] = (M2 - M1 * M1) / (N * t)
+    T = T_range[i]
+    samples = MCsample(n, T, sz, eqsteps, mcsteps)
+    confgs.append(copy.deepcopy(samples))
+    for j in range(sz):
+        spins = samples[j]
+        N = spins.size
+        M[i, j] = abs(Mag(spins))/N
+        E[i, j] = H(spins)/N
 
-plt.figure(1)
-plt.scatter(T_range, E)
-plt.xlabel("Temperature (T)", fontsize=20)
-plt.ylabel("Energy", fontsize=20)
-plt.show()
+E_mean = []
+E_std = []
+for i in E:
+    E_mean.append(np.mean(i))
+    E_std.append(np.std(i))
 
-plt.figure(2)
-plt.scatter(T_range, M)
-plt.xlabel("Temperature (T)", fontsize=20)
-plt.ylabel("Magnetisation", fontsize=20)
-plt.show()
+M_mean = []
+M_std = []
+for i in M:
+    M_mean.append(np.mean(i))
+    M_std.append(np.std(i))
 
-plt.figure(3)
-plt.scatter(T_range, Cv)
-plt.xlabel("Temperature (T)", fontsize=20)
-plt.ylabel("Specific Heat", fontsize=20)
-plt.show()
-
-plt.figure(4)
-plt.scatter(T_range, X)
-plt.xlabel("Temperature (T)", fontsize=20)
-plt.ylabel("Magnetic Susceptibility", fontsize=20)
-plt.show()
+plt.plot(M_mean)
+np.save("configurations.npy", confgs)
+a = np.load("configurations.npy")
+print(a)
+a.shape
