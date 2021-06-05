@@ -1,6 +1,19 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jun  5 20:38:30 2021
+
+@author: Yian Liu
+"""
 
 import numpy as np
 import matplotlib.pyplot as plt
+
+confgs = np.load("configurations.npy")
+confgs_shape = confgs.shape
+
+nt = confgs_shape[0]
+sz = confgs_shape[1]
+T_range = np.linspace(1, 3.5, nt)
 
 # Below are the functions for different thermodynamic properties
 
@@ -38,7 +51,6 @@ def Mag(spins):
 def error(lst):
     return np.std(lst, ddof = 1) / np.sqrt(np.size(lst))
 
-confgs = np.load("configurations.npy")
 # Below are the calculations of thermodynamic properties
 for i in range(nt):
     T = T_range[i]
