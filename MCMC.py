@@ -1,4 +1,4 @@
- # -*- coding: utf-8 -*-
+, # -*- coding: utf-8 -*-
 """
 Created on Tue Mar  2 17:05:31 2021
 
@@ -7,6 +7,7 @@ Created on Tue Mar  2 17:05:31 2021
 
 import numpy as np
 import copy
+import os
 
 # Hamiltonian of a simple 2D lattice with configuration spins (ndarray) and coupling coefficient J = 1
 def H(spins):
@@ -77,17 +78,19 @@ T_range = np.linspace(1, 3.5, nt)
 
 # Below are the parameters (n: square lattice length; sz: size of dataset at
 # each temperaturevalue; eqsteps: steps taken to reach equilibrium; mcsteps:
-# number of intervals between configurations) used to build a list confgs where
-# each element of the list is sz configurations at the corresponding temperature
-confgs = []
+# number of intervals between configurations) used to build a series of datasets
+# where each dataset consists of sz configurations at the corresponding temperature
 n = 6
 sz = 200
 eqsteps = 100
 mcsteps = 100
 
+# data_path includes the name of the directory where the dataset will be stored
+data_path = 'Training Data'
+
 for i in range(nt):
     T = T_range[i]
+    file_name = 'T = ' + format(T, '.2f') + '.npy'
+    completeName = os.path.join(data_path, file_name)
     samples = MCsample(n, T, sz, eqsteps, mcsteps)
-    confgs.append(copy.deepcopy(samples))
-
-np.save("configurations.npy", confgs)
+    np.save(completeName, samples)
