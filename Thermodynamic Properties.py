@@ -14,6 +14,16 @@ confgs_shape = confgs.shape
 nt = confgs_shape[0]
 sz = confgs_shape[1]
 T_range = np.linspace(1, 3.5, nt)
+def H(spins):
+    coup = 0
+    (m, n) = spins.shape
+    for i in range(m - 1):
+        for j in range(n - 1):
+            coup += spins[i, j] * spins[i + 1, j] + spins[i, j] * spins[i, j + 1]
+        coup += spins[i, n - 1] * spins[i + 1, n - 1]
+    for j in range(n - 1):
+        coup += spins[n - 1, j] * spins[n - 1, j + 1]
+    return - coup
 
 # Below are the functions for different thermodynamic properties
 

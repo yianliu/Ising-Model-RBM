@@ -203,7 +203,14 @@ if __name__ == '__main__':
   user = np.array([[0,0,0,1,1,0]])
   print(r.run_visible(user))
 
-rbm = RBM(num_visible = 36, num_hidden = 18)
+r = RBM(num_visible = 36, num_hidden = 18)
 data = np.load("configurations.npy")
 training_data = data[10]
-r.train(training_data, max_epochs = 5000)
+training_data_new = (np.reshape(training_data,(200,36)) + 1)/2
+training_data_new.shape
+r.train(training_data_new, max_epochs = 5000)
+
+a = r.daydream(100)
+a.shape
+b = np.reshape(a, (100, 6 ,6 ))
+print(b)
