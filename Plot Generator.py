@@ -30,3 +30,12 @@ plt.errorbar(T_range, M_vals, yerr = M_errs)
 
 plt.title('matplotlib.pyplot.errorbar() function Example')
 plt.show()
+
+# for looking at confgs
+import numpy as np
+import os
+T = 1.28
+file_name = 'T = ' + format(T, '.2f') + '.npy'
+completeName = os.path.join(data_path, file_name)
+samples = np.load(completeName)
+samples
