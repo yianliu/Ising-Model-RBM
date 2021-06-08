@@ -8,6 +8,8 @@ Created on Tue Mar  2 17:05:31 2021
 import numpy as np
 import copy
 import os
+import matplotlib.pyplot as plt
+from ThermoFunctions import *
 
 # Hamiltonian of a simple 2D lattice with configuration spins (ndarray) and coupling coefficient J = 1
 def H(spins):
@@ -73,14 +75,14 @@ def MCsample(n, T, sz, eqsteps, mcsteps):
     return snapshots
 
 # T_range contains nt evenly spaced temperature points between 1 and 3.5
-nt = 20
+nt = 10
 T_range = np.linspace(1, 3.5, nt)
 
 # Below are the parameters (n: square lattice length; sz: size of dataset at
 # each temperaturevalue; eqsteps: steps taken to reach equilibrium; mcsteps:
 # number of intervals between configurations) used to build a series of datasets
 # where each dataset consists of sz configurations at the corresponding temperature
-n = 6
+n = 8
 sz = 200
 eqsteps = 100
 mcsteps = 100
@@ -94,3 +96,35 @@ for i in range(nt):
     completeName = os.path.join(data_path, file_name)
     samples = MCsample(n, T, sz, eqsteps, mcsteps)
     np.save(completeName, samples)
+
+Engs = []
+Mags = []
+for i in range(nt):
+    T = T_range[i]
+    file_name = 'T = ' + format(T, '.2f') + '.npy'
+    completeName = os.path.join(data_path, file_name)
+    samples = np.load(completeName)
+    Engs.append(E(samples))
+    Mags.append(M(samples))
+E_vals = []
+E_errs = []
+for i in Engs:
+    E_vals.append(i[0])
+    E_errs.append(i[1])
+
+
+plt.errorbar(T_range, E_vals, yerr = E_errs)
+
+plt.title('matplotlib.pyplot.errorbar() function Example')
+plt.show()
+M_vals = []
+M_errs = []
+for i in Mags:
+    M_vals.append(i[0])
+    M_errs.append(i[1])
+
+
+plt.errorbar(T_range, M_vals, yerr = M_errs)
+
+plt.title('matplotlib.pyplot.errorbar() function Example')
+plt.show()

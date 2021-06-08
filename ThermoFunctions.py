@@ -68,7 +68,8 @@ def M(spins_multi):
 def Cv(spins_multi, T):
     N = spins_multi[0].size
     Engs = E_lst(spins_multi)
-    (E_mean, E_err) = E(spins_multi)
+    E_mean = np.mean(Engs)
+    E_err = error(Engs)
     E2 = []
     for i in Engs:
         E2.append(i * i)
@@ -84,7 +85,8 @@ def Cv(spins_multi, T):
 def X(spins_multi, T):
     N = spins_multi[0].size
     Mags = M_lst(spins_multi)
-    (M_mean, M_err) = M(spins_multi)
+    M_mean = np.mean(Mags)
+    M_err = error(Mags)
     M2 = []
     for i in Mags:
         M2.append(i * i)
@@ -94,9 +96,9 @@ def X(spins_multi, T):
     X_err = np.sqrt(M2_err**2 + (2 * M_mean * M_err)**2) / (N * T)
     return (X_mean, X_err)
 
-T = 2.32
+"""T = 2.32
 data_path = 'Training Data'
 file_name = 'T = ' + format(T, '.2f') + '.npy'
 completeName = os.path.join(data_path, file_name)
 samples = np.load(completeName)
-X(samples, T)
+X(samples, T)"""
