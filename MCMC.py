@@ -8,7 +8,6 @@ Created on Tue Mar  2 17:05:31 2021
 import numpy as np
 import copy
 import os
-import matplotlib.pyplot as plt
 
 # Hamiltonian of a simple 2D lattice with configuration spins (ndarray) and coupling coefficient J = 1
 def H(spins):
@@ -90,6 +89,8 @@ mcsteps = 200
 # data_path includes the name of the directory where the dataset will be stored
 data_path = 'Training Data'
 
+# The following step generates datasets of size sz each and stores them in the
+# "Training Data" folder with the corresponding temperature as the filename
 for T in T_range:
     file_name = 'T = ' + format(T, '.2f') + '.npy'
     completeName = os.path.join(data_path, file_name)

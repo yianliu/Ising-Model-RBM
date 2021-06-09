@@ -41,12 +41,12 @@ def E_lst(spins_multi):
         Eng.append(H(spins))
     return np.asarray(Eng)
 
-# E takes a list of multiple spin configurations and returns a tuple consisting
+# E takes a list of multiple spin configurations and returns a list consisting
 # of the mean and the standard error of energy per spin values
 def E(spins_multi):
     N = spins_multi[0].size
     Eng = E_lst(spins_multi) / N
-    return (np.mean(Eng), error(Eng))
+    return [np.mean(Eng), error(Eng)]
 
 # M_lst takes a list of spin configurations and returns a list of magnetisation
 # values of those configurations
@@ -56,12 +56,12 @@ def M_lst(spins_multi):
         M.append(abs(Mag(spins)))
     return np.asarray(M)
 
-# M takes a list of multiple spin configurations and returns a tuple consisting
+# M takes a list of multiple spin configurations and returns a list consisting
 # of the mean and the standard error of magnetisation per spin values
 def M(spins_multi):
     N = spins_multi[0].size
     Mags = M_lst(spins_multi) / N
-    return (np.mean(Mags), error(Mags))
+    return [np.mean(Mags), error(Mags)]
 
 # Cv takes a list of multiple spin configurations and their corresponding
 # temperature and returns the mean and stardard error for the specific heat
@@ -77,7 +77,7 @@ def Cv(spins_multi, T):
     E2_err = error(E2)
     Cv_mean = (E2_mean - E_mean**2) / (N * T**2)
     Cv_err = np.sqrt(E2_err**2 + (2 * E_mean * E_err)**2) / (N * T**2)
-    return (Cv_mean, Cv_err)
+    return [Cv_mean, Cv_err]
 
 # X takes a list of multiple spin configurations and their corresponding
 # temperature and returns the mean and stardard error for the magnetic
@@ -94,11 +94,4 @@ def X(spins_multi, T):
     M2_err = error(M2)
     X_mean = (M2_mean - M_mean**2) / (N * T)
     X_err = np.sqrt(M2_err**2 + (2 * M_mean * M_err)**2) / (N * T)
-    return (X_mean, X_err)
-
-"""T = 2.32
-data_path = 'Training Data'
-file_name = 'T = ' + format(T, '.2f') + '.npy'
-completeName = os.path.join(data_path, file_name)
-samples = np.load(completeName)
-X(samples, T)"""
+    return [X_mean, X_err]
