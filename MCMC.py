@@ -90,7 +90,7 @@ mcsteps = 200
 # data_path includes the name of the directory where the dataset will be stored
 data_path = 'Training Data'
 
-for T in T_range[1:2]:
+for T in T_range:
     file_name = 'T = ' + format(T, '.2f') + '.npy'
     completeName = os.path.join(data_path, file_name)
     samples = MCsample(n, T, sz, eqsteps, mcsteps)
