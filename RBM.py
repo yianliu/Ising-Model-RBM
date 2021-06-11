@@ -195,6 +195,7 @@ class RBM:
   def _logistic(self, x):
     return 1.0 / (1 + np.exp(-x))
 
+"""
 if __name__ == '__main__':
   r = RBM(num_visible = 6, num_hidden = 2)
   training_data = np.array([[1,1,1,0,0,0],[1,0,1,0,0,0],[1,1,1,0,0,0],[0,0,1,1,1,0], [0,0,1,1,0,0],[0,0,1,1,1,0]])
@@ -202,22 +203,4 @@ if __name__ == '__main__':
   print(r.weights)
   user = np.array([[0,0,0,1,1,0]])
   print(r.run_visible(user))
-
-import os
-import numpy as np
-T = 2.32
-data_path = 'D:\Everything\MSc\Final Project\Code\Training Data'
-file_name = '\T = ' + format(T, '.2f') + '.npy'
-completeName = os.path.abspath(data_path + file_name)
-training_data = np.load(completeName)
-
-r = RBM(num_visible = 36, num_hidden = 18)
-training_data_new = (np.reshape(training_data,(200,36)) + 1)/2
-training_data_new.shape
-r.train(training_data_new, max_epochs = 5000)
-
-a = r.daydream(100)
-a.shape
-b = np.reshape(a, (100, 6 ,6 ))
-print(b)
-np.save("2.32.npy", b)
+  """
