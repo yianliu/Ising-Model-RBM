@@ -1,5 +1,7 @@
 from __future__ import print_function
 import numpy as np
+import copy
+import os
 
 class RBM:
 
@@ -26,8 +28,8 @@ class RBM:
     # Insert weights for the bias units into the first row and first column.
     self.weights = np.insert(self.weights, 0, 0, axis = 0)
     self.weights = np.insert(self.weights, 0, 0, axis = 1)
-
-  def train(self, data, max_epochs = 1000, learning_rate = 0.1):
+    self.errors = []
+  def train(self, data, max_epochs = 1000, learning_rate = 0.01):
     """
     Train the machine.
 
@@ -40,6 +42,8 @@ class RBM:
 
     # Insert bias units of 1 into the first column.
     data = np.insert(data, 0, 1, axis = 1)
+
+    errors = []
 
     for epoch in range(max_epochs):
       # Clamp to the data and sample from the hidden units.
@@ -68,6 +72,7 @@ class RBM:
       self.weights += learning_rate * ((pos_associations - neg_associations) / num_examples)
 
       error = np.sum((data - neg_visible_probs) ** 2)
+      self.errors.append(error)
       if self.debug_print:
         print("Epoch %s: error is %s" % (epoch, error))
 
@@ -161,7 +166,7 @@ class RBM:
 
     # Create a matrix, where each row is to be a sample of of the visible units
     # (with an extra bias unit), initialized to all ones.
-    samples = np.ones((num_samples, self.num_visible + 1))
+    samples = np.ones((num_samples + 1, self.num_visible + 1))
 
     # Take the first sample from a uniform distribution.
     samples[0,1:] = np.random.rand(self.num_visible)
@@ -190,17 +195,55 @@ class RBM:
       samples[i,:] = visible_states
 
     # Ignore the bias units (the first column), since they're always set to 1.
-    return samples[:,1:]
+    # Change by Yian: added [1:] at the end since the first configuration is
+    # random and not usable as a sample
+    return (samples[:,1:])[1:]
 
   def _logistic(self, x):
     return 1.0 / (1 + np.exp(-x))
 
-"""
+# Below are my own code aiming to train an RBM at each temperatureand save the
+# RBM generated data obtained via the daydream method
+nt = 10
+T_range = np.linspace(1, 3.5, nt)
+ns = 10000 # number of samples generated
+rbms = dict()
 if __name__ == '__main__':
-  r = RBM(num_visible = 6, num_hidden = 2)
-  training_data = np.array([[1,1,1,0,0,0],[1,0,1,0,0,0],[1,1,1,0,0,0],[0,0,1,1,1,0], [0,0,1,1,0,0],[0,0,1,1,1,0]])
-  r.train(training_data, max_epochs = 5000)
-  print(r.weights)
-  user = np.array([[0,0,0,1,1,0]])
-  print(r.run_visible(user))
-  """
+  load_path = 'Training Data'
+  save_path = 'RBM Generated Data'
+  for i in range(nt):
+      T = T_range[i]
+      file_name = 'T = ' + format(T, '.2f') + '.npy'
+      completeLoadName = os.path.join(load_path, file_name)
+      samples = (np.load(completeLoadName) + 1)/2
+      sz, N, N1 = samples.shape
+      samples_flat = np.reshape(samples, (sz, N * N1))
+      r = RBM(num_visible = 64, num_hidden = 64)
+      r.train(samples_flat, max_epochs = 1000)
+      rbms[str(T)] = r
+      print("Wights at T = " + format(T, '.2f') + ": ", r.weights)
+      RBM_data_flat = r.daydream(ns)
+      RBM_data = np.reshape(RBM_data_flat, (ns, N, N1))
+      completeSaveName = os.path.join(save_path, file_name)
+      np.save(completeSaveName, RBM_data)
+
+rbms_new = dict()
+for key in rbms:
+    rbms_new[format(float(key), '.2f')] = rbms[key]
+
+import matplotlib.pyplot as plt
+for key in rbms_new:
+    errs = rbms_new[key].errors
+    plt.plot(errs, label = key)
+plt.legend(bbox_to_anchor=(1.05, 1))
+plt.savefig('gradient descent.jpg')
+
+
+# errs = r.errors
+# import matplotlib.pyplot as plt
+# plt.plot(errs)
+# T = T_range[0]
+# file_name = 'T = ' + format(T, '.2f') + '.npy'
+# completeSaveName = os.path.join(save_path, file_name)
+# samples = np.load(completeSaveName)
+# print(samples)

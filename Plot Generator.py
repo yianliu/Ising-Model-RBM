@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 nt = 10
 T_range = np.linspace(1, 3.5, nt)
 
-data_path = 'Training Data'
+data_path = 'RBM Generated Data'
 Engs = [] # energy
 Mags = [] # magnetisation
 SH_Cv = [] # specific heat
@@ -58,4 +58,4 @@ plt.xlabel('T')
 plt.ylabel('X')
 
 plt.subplots_adjust(top=0.92, bottom=0.08, left=0.10, right=0.95, hspace=0.6)
-plt.show()
+plt.savefig('trained data.jpg')
