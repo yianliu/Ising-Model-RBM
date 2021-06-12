@@ -1,7 +1,5 @@
 from __future__ import print_function
 import numpy as np
-import copy
-import os
 
 class RBM:
 
@@ -201,49 +199,3 @@ class RBM:
 
   def _logistic(self, x):
     return 1.0 / (1 + np.exp(-x))
-
-# Below are my own code aiming to train an RBM at each temperatureand save the
-# RBM generated data obtained via the daydream method
-nt = 10
-T_range = np.linspace(1, 3.5, nt)
-ns = 10000 # number of samples generated
-rbms = dict()
-if __name__ == '__main__':
-  load_path = 'Training Data'
-  save_path = 'RBM Generated Data'
-  for i in range(nt):
-      T = T_range[i]
-      file_name = 'T = ' + format(T, '.2f') + '.npy'
-      completeLoadName = os.path.join(load_path, file_name)
-      samples = (np.load(completeLoadName) + 1)/2
-      sz, N, N1 = samples.shape
-      samples_flat = np.reshape(samples, (sz, N * N1))
-      r = RBM(num_visible = 64, num_hidden = 64)
-      r.train(samples_flat, max_epochs = 1000)
-      rbms[str(T)] = r
-      print("Wights at T = " + format(T, '.2f') + ": ", r.weights)
-      RBM_data_flat = r.daydream(ns)
-      RBM_data = np.reshape(RBM_data_flat, (ns, N, N1))
-      completeSaveName = os.path.join(save_path, file_name)
-      np.save(completeSaveName, RBM_data)
-
-rbms_new = dict()
-for key in rbms:
-    rbms_new[format(float(key), '.2f')] = rbms[key]
-
-import matplotlib.pyplot as plt
-for key in rbms_new:
-    errs = rbms_new[key].errors
-    plt.plot(errs, label = key)
-plt.legend(bbox_to_anchor=(1.05, 1))
-plt.savefig('gradient descent.jpg')
-
-
-# errs = r.errors
-# import matplotlib.pyplot as plt
-# plt.plot(errs)
-# T = T_range[0]
-# file_name = 'T = ' + format(T, '.2f') + '.npy'
-# completeSaveName = os.path.join(save_path, file_name)
-# samples = np.load(completeSaveName)
-# print(samples)

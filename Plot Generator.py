@@ -1,13 +1,10 @@
 from ThermoFunctions import *
+from Parameters import *
 import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-# T_range contains nt evenly spaced temperature points between 1 and 3.5
-nt = 10
-T_range = np.linspace(1, 3.5, nt)
-
-data_path = 'RBM Generated Data'
+data_path = 'Training Data'
 Engs = [] # energy
 Mags = [] # magnetisation
 SH_Cv = [] # specific heat
@@ -16,7 +13,7 @@ MS_X = [] # magnetic susceptibility
 for i in range(nt):
     T = T_range[i]
     file_name = 'T = ' + format(T, '.2f') + '.npy'
-    completeName = os.path.join(data_path, file_name)
+    completeName = os.path.join('Data', data_path, file_name)
     samples = np.load(completeName)
     Engs.append(E(samples))
     Mags.append(M(samples))

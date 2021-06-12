@@ -8,6 +8,7 @@ Created on Tue Mar  2 17:05:31 2021
 import numpy as np
 import copy
 import os
+from Parameters import *
 
 # Hamiltonian of a simple 2D lattice with configuration spins (ndarray) and coupling coefficient J = 1
 def H(spins):
@@ -73,19 +74,6 @@ def MCsample(n, T, sz, eqsteps, mcsteps):
         print(i)
     return snapshots
 
-# T_range contains nt evenly spaced temperature points between 1 and 3.5
-nt = 10
-T_range = np.linspace(1, 3.5, nt)
-
-# Below are the parameters (n: square lattice length; sz: size of dataset at
-# each temperaturevalue; eqsteps: steps taken to reach equilibrium; mcsteps:
-# number of intervals between configurations) used to build a series of datasets
-# where each dataset consists of sz configurations at the corresponding temperature
-n = 8
-sz = 10000
-eqsteps = 200
-mcsteps = 200
-
 # data_path includes the name of the directory where the dataset will be stored
 data_path = 'Training Data'
 
@@ -93,6 +81,6 @@ data_path = 'Training Data'
 # "Training Data" folder with the corresponding temperature as the filename
 for T in T_range:
     file_name = 'T = ' + format(T, '.2f') + '.npy'
-    completeName = os.path.join(data_path, file_name)
+    completeName = os.path.join('Data', data_path, file_name)
     samples = MCsample(n, T, sz, eqsteps, mcsteps)
     np.save(completeName, samples)
