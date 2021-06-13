@@ -18,13 +18,15 @@ ns = 10000
 # in T_range and they store the corresponding RBM objects
 rbms = dict()
 
-load_path = 'Training Data'
-save_path = os.path.join('RBM Generated Data', nH_name)
+load_path = os.path.join('Data', 'Training Data')
+save_data_path = os.path.join('Data', 'RBM Generated Data', nH_name)
+save_weight_path = os.path.join('Data', 'RBM Parameters', 'Weights', nH_name)
+save_error_path = os.path.join('Data', 'RBM Parameters', 'Errors', nH_name)
 
 def train_and_sample(T):
     file_name = 'T = ' + format(T, '.2f') + '.npy'
-    completeLoadName = os.path.join('Data', load_path, file_name)
-    samples = (np.load(completeLoadName) + 1)/2 # convert to 0, 1
+    completeLoad = os.path.join(load_path, file_name)
+    samples = (np.load(completeLoad) + 1)/2 # convert to 0, 1
     sz, N, N1 = samples.shape
     samples_flat = np.reshape(samples, (sz, N * N1))
     r = RBM(num_visible = 64, num_hidden = nH)
@@ -33,18 +35,22 @@ def train_and_sample(T):
     print("Wights at T = " + format(T, '.2f') + ": ", r.weights)
     RBM_data_flat = r.daydream(ns) * 2 - 1 # convert back to -1, 1
     RBM_data = np.reshape(RBM_data_flat, (ns, N, N1))
-    completeSaveName = os.path.join('Data', save_path, file_name)
-    np.save(completeSaveName, RBM_data)
+    completeSaveData = os.path.join(save_data_path, file_name)
+    np.save(completeSaveData, RBM_data)
+    completeSaveWeight = os.path.join(save_weight_path, file_name)
+    np.save(completeSaveWeight, r.weights)
+    completeSaveError = os.path.join(save_error_path, file_name)
+    np.save(completeSaveError, r.errors)
 
 
 with concurrent.futures.ThreadPoolExecutor() as executor:
     executor.map(train_and_sample, T_range)
-
-plot_path = 'Plots'
-import matplotlib.pyplot as plt
-for key in rbms:
-    errs = rbms[key].errors
-    plt.plot(errs, label = key)
-plt.legend(bbox_to_anchor=(1.05, 1))
-plot_name = os.path.join('Plots', 'RBM Training', nH_name + '.jpg')
-plt.savefig(plot_name, bbox_inches='tight')
+# 
+# plot_path = 'Plots'
+# import matplotlib.pyplot as plt
+# for key in rbms:
+#     errs = rbms[key].errors
+#     plt.plot(errs, label = key)
+# plt.legend(bbox_to_anchor=(1.05, 1))
+# plot_name = os.path.join('Plots', 'RBM Training', nH_name + '.jpg')
+# plt.savefig(plot_name, bbox_inches='tight')
