@@ -143,4 +143,4 @@ fig.legend(handles, labels, loc ='right', bbox_to_anchor=(1.15, 0.5))
 plt.tight_layout(pad = 1.5)
 
 plot_path = os.path.join('Plots', 'RBM Output', 'Thermal Observables.jpg')
-fig.savefig(plot_path)
+fig.savefig(plot_path, bbox_inches = 'tight')
