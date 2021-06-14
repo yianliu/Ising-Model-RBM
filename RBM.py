@@ -1,4 +1,5 @@
 from __future__ import print_function
+from sklearn.model_selection import train_test_split
 import numpy as np
 
 class RBM:
@@ -26,8 +27,9 @@ class RBM:
     # Insert weights for the bias units into the first row and first column.
     self.weights = np.insert(self.weights, 0, 0, axis = 0)
     self.weights = np.insert(self.weights, 0, 0, axis = 1)
-    self.errors = []
-    
+    self.training_errors = []
+    self.test_errors = []
+
   def train(self, data, max_epochs = 1000, learning_rate = 0.01):
     """
     Train the machine.
@@ -36,25 +38,25 @@ class RBM:
     ----------
     data: A matrix where each row is a training example consisting of the states of visible units.
     """
+    training_data, test_data = train_test_split(data) # Added by Yian
 
-    num_examples = data.shape[0]
+    num_examples = training_data.shape[0]
 
     # Insert bias units of 1 into the first column.
-    data = np.insert(data, 0, 1, axis = 1)
+    training_data = np.insert(training_data, 0, 1, axis = 1)
 
-    errors = []
 
     for epoch in range(max_epochs):
       # Clamp to the data and sample from the hidden units.
       # (This is the "positive CD phase", aka the reality phase.)
-      pos_hidden_activations = np.dot(data, self.weights)
+      pos_hidden_activations = np.dot(training_data, self.weights)
       pos_hidden_probs = self._logistic(pos_hidden_activations)
       pos_hidden_probs[:,0] = 1 # Fix the bias unit.
       pos_hidden_states = pos_hidden_probs > np.random.rand(num_examples, self.num_hidden + 1)
       # Note that we're using the activation *probabilities* of the hidden states, not the hidden states
       # themselves, when computing associations. We could also use the states; see section 3 of Hinton's
       # "A Practical Guide to Training Restricted Boltzmann Machines" for more.
-      pos_associations = np.dot(data.T, pos_hidden_probs)
+      pos_associations = np.dot(training_data.T, pos_hidden_probs)
 
       # Reconstruct the visible units and sample again from the hidden units.
       # (This is the "negative CD phase", aka the daydreaming phase.)
@@ -70,10 +72,12 @@ class RBM:
       # Update weights.
       self.weights += learning_rate * ((pos_associations - neg_associations) / num_examples)
 
-      error = np.sum((data - neg_visible_probs) ** 2)
-      self.errors.append(error)
+      training_error = np.sum((training_data - neg_visible_probs) ** 2)
+      test_error = np.sum((test_data - neg_visible_probs) ** 2)
+      self.training_errors.append(training_error)
+      self.test_errors.append(test_error)
       if self.debug_print:
-        print("Epoch %s: error is %s" % (epoch, error))
+        print("Epoch %s: error is %s" % (epoch, training_error))
 
   def run_visible(self, data):
     """
