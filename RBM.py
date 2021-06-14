@@ -27,8 +27,12 @@ class RBM:
     # Insert weights for the bias units into the first row and first column.
     self.weights = np.insert(self.weights, 0, 0, axis = 0)
     self.weights = np.insert(self.weights, 0, 0, axis = 1)
+<<<<<<< HEAD
     self.training_errors = []
     self.test_errors = []
+=======
+    self.errors = []
+>>>>>>> 3c421f4717645d3a617e72ae9a94522b218ba62b
 
   def train(self, data, max_epochs = 1000, learning_rate = 0.01):
     """
