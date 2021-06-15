@@ -8,6 +8,7 @@ Created on Tue Mar  2 17:05:31 2021
 import numpy as np
 import copy
 import os
+import concurrent.futures
 from Parameters import *
 
 # Hamiltonian of a simple 2D lattice with configuration spins (ndarray) and coupling coefficient J = 1
@@ -71,7 +72,7 @@ def MCsample(n, T, sz, eqsteps, mcsteps):
     for i in range(sz - 1):
         spins = MH(spins, T, mcsteps)
         snapshots.append(copy.deepcopy(spins))
-        print(i)
+        print('T = ' + format(T, '.2f') + ': ' + str(i))
     return snapshots
 
 # data_path includes the name of the directory where the dataset will be stored
@@ -79,8 +80,11 @@ data_path = 'Training Data'
 
 # The following step generates datasets of size sz each and stores them in the
 # "Training Data" folder with the corresponding temperature as the filename
-for T in T_range:
+def MCMC_sample(T):
     file_name = 'T = ' + format(T, '.2f') + '.npy'
     completeName = os.path.join('Data', data_path, file_name)
     samples = MCsample(n, T, sz, eqsteps, mcsteps)
     np.save(completeName, samples)
+
+with concurrent.futures.ThreadPoolExecutor() as executor:
+    executor.map(MCMC_sample, T_range)
