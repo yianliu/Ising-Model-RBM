@@ -34,7 +34,7 @@ for nH in [16, 32, 64]:
     [Cv_vals, Cv_errs] = np.transpose(SH_Cv)
     [X_vals, X_errs] = np.transpose(MS_X)
 
-    obs_path = os.path.join('Data', 'RBM Generated Data', 'Observables', nH_name)
+    obs_path = os.path.join('Data', 'RBM Generated Data', nH_name, 'Observables')
     np.save(os.path.join(obs_path, 'E_vals.npy'), E_vals)
     np.save(os.path.join(obs_path, 'E_errs.npy'), E_errs)
     np.save(os.path.join(obs_path, 'M_vals.npy'), M_vals)
