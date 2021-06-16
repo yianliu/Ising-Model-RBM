@@ -9,6 +9,6 @@ T_range = np.linspace(1.5, 2.5, nt)
 # number of intervals between configurations) used to build a series of datasets
 # where each dataset consists of sz configurations at the corresponding temperature
 n = 8
-sz = 100000
+sz = 50000
 eqsteps = 200
 mcsteps = 200
