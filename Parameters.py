@@ -16,7 +16,7 @@ mcsteps = 200
 # Below are the training parameters (me: max_epochs for training which is the
 # number of training steps; lr: learning rate; ns: number of samples generated
 # by each RBM; nH_list: list of numbers of hidden nodes) for RBM training and sampling
-me = 2000
-lr = 0.1
-ns = 50000
+me = 5000
+lr = 0.02
+ns = 20000
 nH_list = [4, 16, 32, 64]

@@ -71,8 +71,8 @@ class RBM:
 
       error = np.sum((data - neg_visible_probs) ** 2)
       self.errors.append(error)
-      # if self.debug_print:
-      #   print("Epoch %s: error is %s" % (epoch, error))
+      if self.debug_print:
+        print("Epoch %s: error is %s" % (epoch, error))
 
   def run_visible(self, data):
     """

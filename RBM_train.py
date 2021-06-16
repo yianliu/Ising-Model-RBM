@@ -51,6 +51,6 @@ for nH in nH_list[3:]:
     ax.legend(bbox_to_anchor=(1.05, 1))
     ax.set_title('Gradient Descent with ' + nH_name + ' and learning rate = ' + str(lr))
     plot_name = os.path.join('Plots', 'RBM Training', nH_name + ', learning rate = ' + str(lr) + '.jpg')
-    fig.savefig(plot_name, bbox_inches='tight')
+    fig.savefig(plot_name, bbox_inches='tight', dpi = 1200)
 
     winsound.Beep(440,1000)
