@@ -10,7 +10,7 @@ import winsound
 # RBM generated data obtained via the daydream method
 
 
-for nH in [16, 32, 64]:
+for nH in nH_list[3:]:
     # nH is the number of hidden nodes of the RBMs
     nH_name = 'nH = ' + str(nH)
 
