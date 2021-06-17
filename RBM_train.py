@@ -10,7 +10,7 @@ import winsound
 # RBM generated data obtained via the daydream method
 
 
-for nH in nH_list[3:]:
+for nH in nH_list[1:]:
     # nH is the number of hidden nodes of the RBMs
     nH_name = 'nH = ' + str(nH)
 
@@ -53,4 +53,4 @@ for nH in nH_list[3:]:
     plot_name = os.path.join('Plots', 'RBM Training', nH_name + ', learning rate = ' + str(lr) + '.jpg')
     fig.savefig(plot_name, bbox_inches='tight', dpi = 1200)
 
-    winsound.Beep(440,1000)
+winsound.Beep(440,1000)
