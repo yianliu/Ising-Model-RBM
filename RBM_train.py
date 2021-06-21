@@ -69,29 +69,29 @@ for nH in nH_list[2:]:
     save_weight_path = os.path.join('Data', 'RBM Parameters', 'Weights', nH_name)
     save_error_path = os.path.join('Data', 'RBM Parameters', 'Errors', nH_name)
 
-    # def train_and_sample(T):
-    #     file_name = 'T = ' + format(T, '.2f') + '.npy'
-    #     completeLoad = os.path.join(load_path, file_name)
-    #     completeLoadWeight = os.path.join(save_weight_path, file_name)
-    #     samples = (np.load(completeLoad) + 1)/2 # convert to 0, 1
-    #     sz, N, N1 = samples.shape
-    #     samples_flat = np.reshape(samples, (sz, N * N1))
-    #     trained_weights = np.load(completeLoadWeight)
-    #     r = RBM(num_visible = 64, num_hidden = nH)
-    #     r.weights = trained_weights
-    #     r.train(samples_flat, max_epochs = continued_me, learning_rate = continued_lr)
-    #     print("Wights at T = " + format(T, '.2f') + ": ", r.weights)
-    #     RBM_data_flat = r.daydream(ns) * 2 - 1 # convert back to -1, 1
-    #     RBM_data = np.reshape(RBM_data_flat, (ns, N, N1))
-    #     completeSaveData = os.path.join(save_data_path, file_name)
-    #     np.save(completeSaveData, RBM_data)
-    #     completeSaveWeight = os.path.join(save_weight_path, 'continued ' + file_name)
-    #     np.save(completeSaveWeight, r.weights)
-    #     completeSaveError = os.path.join(save_error_path, 'continued ' + file_name)
-    #     np.save(completeSaveError, r.errors)
+    def continued_train_and_sample(T):
+        file_name = 'T = ' + format(T, '.2f') + '.npy'
+        completeLoad = os.path.join(load_path, file_name)
+        completeLoadWeight = os.path.join(save_weight_path, file_name)
+        samples = (np.load(completeLoad) + 1)/2 # convert to 0, 1
+        sz, N, N1 = samples.shape
+        samples_flat = np.reshape(samples, (sz, N * N1))
+        trained_weights = np.load(completeLoadWeight)
+        r = RBM(num_visible = 64, num_hidden = nH)
+        r.weights = trained_weights
+        r.train(samples_flat, max_epochs = continued_me, learning_rate = continued_lr)
+        print("Wights at T = " + format(T, '.2f') + ": ", r.weights)
+        RBM_data_flat = r.daydream(ns) * 2 - 1 # convert back to -1, 1
+        RBM_data = np.reshape(RBM_data_flat, (ns, N, N1))
+        completeSaveData = os.path.join(save_data_path, file_name)
+        np.save(completeSaveData, RBM_data)
+        completeSaveWeight = os.path.join(save_weight_path, 'continued ' + file_name)
+        np.save(completeSaveWeight, r.weights)
+        completeSaveError = os.path.join(save_error_path, 'continued ' + file_name)
+        np.save(completeSaveError, r.errors)
 
-    # with concurrent.futures.ThreadPoolExecutor() as executor:
-    #     executor.map(train_and_sample, T_range)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.map(continued_train_and_sample, T_range)
     fig, ax = plt.subplots()
     for T in T_range:
         file_name = 'T = ' + format(T, '.2f') + '.npy'
