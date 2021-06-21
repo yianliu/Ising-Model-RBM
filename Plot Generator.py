@@ -6,7 +6,7 @@ import os
 import matplotlib.pyplot as plt
 
 
-for nH in nH_list[1:]:
+for nH in nH_list:
     # Uncomment the following if plotting for an individual value of nH
     nH_name = 'nH = ' + str(nH)
 

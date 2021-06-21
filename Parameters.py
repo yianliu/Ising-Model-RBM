@@ -19,4 +19,7 @@ mcsteps = 200
 me = 5000
 lr = 0.02
 ns = 20000
-nH_list = [4, 16, 32, 64]
+nH_list = [16, 32, 64]
+
+continued_me = 1000
+continued_lr = 0.005
