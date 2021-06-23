@@ -13,13 +13,16 @@ sz = 50000
 eqsteps = 200
 mcsteps = 200
 
+
 # Below are the training parameters (me: max_epochs for training which is the
 # number of training steps; lr: learning rate; ns: number of samples generated
-# by each RBM; nH_list: list of numbers of hidden nodes) for RBM training and sampling
-me = 5000
-lr = 0.02
+# by each RBM; nH_list: list of numbers of hidden nodes; bs: number of
+# configurations in each mini batch) for RBM training and sampling
+me = 100
+lr = 0.005
 ns = 20000
-nH_list = [16, 32, 64]
+nH_list = [4, 16, 32, 64]
+bs = 50
 
 continued_me = 1000
 continued_lr = 0.005
