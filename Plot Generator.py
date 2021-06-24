@@ -5,8 +5,8 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-
-for nH in nH_list:
+'''
+for nH in nH_list[:3]:
     # Uncomment the following if plotting for an individual value of nH
     nH_name = 'nH = ' + str(nH)
 
@@ -108,9 +108,9 @@ for nH in nH_list:
     # ax2.legend()
     # weight_plot_path = os.path.join('Plots', 'Weights', nH_name + '.jpg')
     # plt.tight_layout(pad = 1.5)
-    # fig.savefig(weight_plot_path, bbox_inches = 'tight', dpi = 1200)
+    # fig.savefig(weight_plot_path, bbox_inches = 'tight', dpi = 1200)'''
 
-'''
+
 # Below are for all data plots
 
 E_vals_dict = dict()
@@ -168,4 +168,4 @@ fig.legend(handles, labels, loc ='right', bbox_to_anchor=(1.15, 0.5))
 plt.tight_layout(pad = 1.5)
 
 plot_path = os.path.join('Plots', 'RBM Output', 'Thermal Observables.jpg')
-fig.savefig(plot_path, bbox_inches = 'tight', dpi = 1200)'''
+fig.savefig(plot_path, bbox_inches = 'tight', dpi = 1200)
