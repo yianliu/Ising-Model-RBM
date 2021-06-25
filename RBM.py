@@ -76,7 +76,7 @@ class RBM:
             neg_associations = np.dot(neg_visible_probs.T, neg_hidden_probs)
 
             # Update weights.
-            self.weights += (learning_rate / batch_number) * ((pos_associations - neg_associations) / batch_size)
+            self.weights += learning_rate * ((pos_associations - neg_associations) / batch_size)
 
             error = np.sum((data_batch - neg_visible_probs) ** 2)
         self.errors.append(error)
