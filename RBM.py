@@ -28,7 +28,7 @@ class RBM:
     self.weights = np.insert(self.weights, 0, 0, axis = 1)
     self.errors = []
 
-  def train(self, data, max_epochs = 1000, learning_rate = 0.01, batch_size = 50):
+  def train(self, data, max_epochs = 1000, learning_rate = 0.01, batch_size = 50, gibbs_steps = 3):
     """
     Train the machine.
 
@@ -42,6 +42,8 @@ class RBM:
 
 
     for epoch in range(max_epochs):
+        # Below line added by Yian: error initialised to 0
+        error = 0
         # Below line added by Yian: shuffle dataset
         np.random.shuffle(data)
         # Insert bias units of 1 into the first column.
@@ -64,21 +66,26 @@ class RBM:
             # "A Practical Guide to Training Restricted Boltzmann Machines" for more.
             pos_associations = np.dot(data_batch.T, pos_hidden_probs)
 
-            # Reconstruct the visible units and sample again from the hidden units.
-            # (This is the "negative CD phase", aka the daydreaming phase.)
-            neg_visible_activations = np.dot(pos_hidden_states, self.weights.T)
-            neg_visible_probs = self._logistic(neg_visible_activations)
-            neg_visible_probs[:,0] = 1 # Fix the bias unit.
-            neg_hidden_activations = np.dot(neg_visible_probs, self.weights)
-            neg_hidden_probs = self._logistic(neg_hidden_activations)
-            # Note, again, that we're using the activation *probabilities* when computing associations, not the states
-            # themselves.
+            neg_hidden_states = pos_hidden_states
+
+            for gibbs_step in range(gibbs_steps):
+                # Reconstruct the visible units and sample again from the hidden units.
+                # (This is the "negative CD phase", aka the daydreaming phase.)
+                neg_visible_activations = np.dot(neg_hidden_states, self.weights.T)
+                neg_visible_probs = self._logistic(neg_visible_activations)
+                neg_visible_probs[:,0] = 1 # Fix the bias unit.
+                neg_hidden_activations = np.dot(neg_visible_probs, self.weights)
+                neg_hidden_probs = self._logistic(neg_hidden_activations)
+                neg_hidden_probs[:,0] = 1 # Fix the bias unit.
+                neg_hidden_states = neg_hidden_probs > np.random.rand(batch_size, self.num_hidden + 1)
+                # Note, again, that we're using the activation *probabilities* when computing associations, not the states
+                # themselves.
             neg_associations = np.dot(neg_visible_probs.T, neg_hidden_probs)
 
             # Update weights.
             self.weights += learning_rate * ((pos_associations - neg_associations) / batch_size)
 
-            error = np.sum((data_batch - neg_visible_probs) ** 2)
+            error += np.sum((data_batch - neg_visible_probs) ** 2) / batch_number
         self.errors.append(error)
         if self.debug_print:
           print("Epoch %s: error is %s" % (epoch, error))

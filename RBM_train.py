@@ -11,7 +11,7 @@ import winsound
 # The code below to train an RBM at each temperatureand save the
 # RBM generated data obtained via the daydream method
 
-for nH in nH_list[:3]:
+for nH in nH_list[3:]:
     # nH is the number of hidden nodes of the RBMs
     nH_name = 'nH = ' + str(nH)
 
@@ -50,6 +50,8 @@ for nH in nH_list[:3]:
     ax.legend(bbox_to_anchor=(1.05, 1))
     ax.set_title('Gradient Descent with ' + nH_name + ' and learning rate = ' + str(lr))
     plot_name = os.path.join('Plots', 'RBM Training', nH_name + ', learning rate = ' + str(lr) + '.jpg')
+    if os.path.isfile(plot_name):
+       os.remove(plot_name)
     fig.savefig(plot_name, bbox_inches='tight', dpi = 1200)
     winsound.Beep(440,1000)
 
@@ -57,7 +59,7 @@ for nH in nH_list[:3]:
 # The code below is similar to the training code above but it reads the Weights
 # of RBMs that have already been trained and continues training for better results
 
-for nH in nH_list[2:]:
+for nH in nH_list[3:]:
     # nH is the number of hidden nodes of the RBMs
     nH_name = 'nH = ' + str(nH)
 

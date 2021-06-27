@@ -62,4 +62,6 @@ for i in range(nt):
     fig.patch.set_facecolor('w')
     fig.suptitle('RBM Data: nH = ' + str(nH) + ' T = ' + format(T, '.2f'))
     figname = os.path.join('Plots', 'Configurations', 'RBM nH = ' + str(nH) + ' T = ' + format(T, '.2f') + '.jpg')
+    if os.path.isfile(figname):
+       os.remove(figname)
     fig.savefig(figname, dpi = 400)
