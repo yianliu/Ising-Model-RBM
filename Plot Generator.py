@@ -126,7 +126,7 @@ M_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'M_vals.npy')
 Cv_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'Cv_vals.npy'))
 X_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'X_vals.npy'))
 
-for nH in nH_list:
+for nH in nH_list[3:]:
     nH_name = 'nH = ' + str(nH)
     obs_path = os.path.join('Data', 'RBM Generated Data', nH_name, 'Observables')
     E_vals_dict[nH_name] = np.load(os.path.join(obs_path, 'E_vals.npy'))
