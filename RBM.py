@@ -28,7 +28,7 @@ class RBM:
     self.weights = np.insert(self.weights, 0, 0, axis = 1)
     self.errors = []
 
-  def train(self, data, max_epochs = 1000, learning_rate = 0.01, batch_size = 50, gibbs_steps = 3):
+  def train(self, data, max_epochs = 1000, learning_rate = 0.01, batch_size = 50, gibbs_steps = 20):
     """
     Train the machine.
 

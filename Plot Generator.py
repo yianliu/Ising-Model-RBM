@@ -6,7 +6,7 @@ import os
 import matplotlib.pyplot as plt
 
 
-for nH in nH_list[3:]:
+for nH in nH_list[2:]:
     # Uncomment the following if plotting for an individual value of nH
     nH_name = 'nH = ' + str(nH)
 
@@ -44,7 +44,7 @@ for nH in nH_list[3:]:
     np.save(os.path.join(obs_path, 'X_vals.npy'), X_vals)
     np.save(os.path.join(obs_path, 'X_errs.npy'), X_errs)
 
-
+'''
     # The following chunk of code plot individual thermal observable plots for
     # each nH value and saves the figure in the corresponding directory
 
@@ -85,7 +85,7 @@ for nH in nH_list[3:]:
     plot_path = os.path.join('Plots', 'RBM Output', nH_name + '.jpg')
     if os.path.isfile(plot_path):
        os.remove(plot_path)
-    fig.savefig(plot_path, dpi = 1200)
+    fig.savefig(plot_path, dpi = 1200)'''
 
 
     # # The following chunk of code will load the weights for the RBMs and plot
@@ -112,7 +112,7 @@ for nH in nH_list[3:]:
     # plt.tight_layout(pad = 1.5)
     # fig.savefig(weight_plot_path, bbox_inches = 'tight', dpi = 1200)
 
-'''
+
 # Below are for all data plots
 
 E_vals_dict = dict()
@@ -126,7 +126,7 @@ M_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'M_vals.npy')
 Cv_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'Cv_vals.npy'))
 X_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'X_vals.npy'))
 
-for nH in nH_list[3:]:
+for nH in nH_list[2:]:
     nH_name = 'nH = ' + str(nH)
     obs_path = os.path.join('Data', 'RBM Generated Data', nH_name, 'Observables')
     E_vals_dict[nH_name] = np.load(os.path.join(obs_path, 'E_vals.npy'))
@@ -172,4 +172,4 @@ plt.tight_layout(pad = 1.5)
 plot_path = os.path.join('Plots', 'RBM Output', 'Thermal Observables.jpg')
 if os.path.isfile(plot_path):
    os.remove(plot_path)
-fig.savefig(plot_path, bbox_inches = 'tight', dpi = 1200)'''
+fig.savefig(plot_path, bbox_inches = 'tight', dpi = 1200)

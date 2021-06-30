@@ -11,7 +11,7 @@ import winsound
 # The code below to train an RBM at different learning rates at each temperature
 # and plots out the gradient descent in order to find the best lr for each RBM
 
-nH = 64
+nH = 16
 nH_name = 'nH = ' + str(nH)
 
 
@@ -39,7 +39,7 @@ def train_and_sample(T, lr):
     completeSaveError = os.path.join(save_error_path, file_name)
     np.save(completeSaveError, r.errors)
 
-for T in T_range[5:]:
+for T in T_range:
     def train_and_sample_at_T(lr):
         return train_and_sample(T, lr)
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -59,4 +59,4 @@ for T in T_range[5:]:
     if os.path.isfile(plot_name):
        os.remove(plot_name)
     fig.savefig(plot_name, bbox_inches='tight', dpi = 1200)
-    # winsound.Beep(440,1000)
+    winsound.Beep(440,1000)

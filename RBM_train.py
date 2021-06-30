@@ -11,7 +11,7 @@ import winsound
 # The code below to train an RBM at each temperatureand save the
 # RBM generated data obtained via the daydream method
 
-for nH in nH_list[3:]:
+for nH in nH_list[2:]:
     # nH is the number of hidden nodes of the RBMs
     nH_name = 'nH = ' + str(nH)
 
@@ -26,6 +26,7 @@ for nH in nH_list[3:]:
         samples = (np.load(completeLoad) + 1)/2 # convert to 0, 1
         sz, N, N1 = samples.shape
         samples_flat = np.reshape(samples, (sz, N * N1))
+        lr = lr_nH_64['T = ' + format(T, '.2f')]
         r = RBM(num_visible = 64, num_hidden = nH)
         r.train(samples_flat, max_epochs = me, learning_rate = lr, batch_size = bs)
         print("Wights at T = " + format(T, '.2f') + ": ", r.weights)
@@ -48,8 +49,8 @@ for nH in nH_list[3:]:
         ax.plot(errs, label = 'T = ' + format(T, '.2f'))
 
     ax.legend(bbox_to_anchor=(1.05, 1))
-    ax.set_title('Gradient Descent with ' + nH_name + ' and learning rate = ' + str(lr))
-    plot_name = os.path.join('Plots', 'RBM Training', nH_name + ', learning rate = ' + str(lr) + '.jpg')
+    ax.set_title('Gradient Descent with ' + nH_name)
+    plot_name = os.path.join('Plots', 'RBM Training', nH_name + '.jpg')
     if os.path.isfile(plot_name):
        os.remove(plot_name)
     fig.savefig(plot_name, bbox_inches='tight', dpi = 1200)
