@@ -75,7 +75,7 @@ class RBM:
                 neg_visible_probs = self._logistic(neg_visible_activations)
                 neg_visible_probs[:,0] = 1 # Fix the bias unit.
                 neg_visible_states = neg_visible_probs > np.random.rand(batch_size, self.num_visible + 1)
-                neg_hidden_activations = np.dot(neg_visible_probs, self.weights)
+                neg_hidden_activations = np.dot(neg_visible_states, self.weights)
                 neg_hidden_probs = self._logistic(neg_hidden_activations)
                 neg_hidden_probs[:,0] = 1 # Fix the bias unit.
                 neg_hidden_states = neg_hidden_probs > np.random.rand(batch_size, self.num_hidden + 1)
