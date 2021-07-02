@@ -26,7 +26,7 @@ for nH in nH_list[2:]:
         samples = (np.load(completeLoad) + 1)/2 # convert to 0, 1
         sz, N, N1 = samples.shape
         samples_flat = np.reshape(samples, (sz, N * N1))
-        lr = lr_nH_64['T = ' + format(T, '.2f')]
+        # lr = lr_nH_64['T = ' + format(T, '.2f')]
         r = RBM(num_visible = 64, num_hidden = nH)
         r.train(samples_flat, max_epochs = me, learning_rate = lr, batch_size = bs)
         print("Wights at T = " + format(T, '.2f') + ": ", r.weights)

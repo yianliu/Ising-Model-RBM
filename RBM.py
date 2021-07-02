@@ -28,7 +28,7 @@ class RBM:
     self.weights = np.insert(self.weights, 0, 0, axis = 1)
     self.errors = []
 
-  def train(self, data, max_epochs = 1000, learning_rate = 0.01, batch_size = 50, gibbs_steps = 20):
+  def train(self, data, max_epochs = 1000, learning_rate = 0.01, batch_size = 50, gibbs_steps = 1):
     """
     Train the machine.
 
@@ -74,13 +74,14 @@ class RBM:
                 neg_visible_activations = np.dot(neg_hidden_states, self.weights.T)
                 neg_visible_probs = self._logistic(neg_visible_activations)
                 neg_visible_probs[:,0] = 1 # Fix the bias unit.
+                neg_visible_states = neg_visible_probs > np.random.rand(batch_size, self.num_visible + 1)
                 neg_hidden_activations = np.dot(neg_visible_probs, self.weights)
                 neg_hidden_probs = self._logistic(neg_hidden_activations)
                 neg_hidden_probs[:,0] = 1 # Fix the bias unit.
                 neg_hidden_states = neg_hidden_probs > np.random.rand(batch_size, self.num_hidden + 1)
                 # Note, again, that we're using the activation *probabilities* when computing associations, not the states
                 # themselves.
-            neg_associations = np.dot(neg_visible_probs.T, neg_hidden_probs)
+            neg_associations = np.dot(neg_visible_states.T, neg_hidden_probs)
 
             # Update weights.
             self.weights += learning_rate * ((pos_associations - neg_associations) / batch_size)
