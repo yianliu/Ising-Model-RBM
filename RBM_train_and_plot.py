@@ -39,8 +39,8 @@ def train_and_plot(nH, T, lr, me, steps, bs, gs):
 
     for step in range(steps):
         epoch_list.append((step + 1) * epoch_int)
-        r.train(samples_flat, max_epochs = epoch_int, learning_rate = lr, batch_size = bs, gibbs_steps = gs)
-        RBM_data_flat = r.daydream(ns) * 2 - 1 # convert back to -1, 1
+        r.train(training_vis = samples_flat, max_epochs = epoch_int, learning_rate = lr, batch_size = bs, gibbs_steps = gs)
+        RBM_data_flat = r.daydream(num_samples = ns, gibbs_steps = 1) * 2 - 1 # convert back to -1, 1
         RBM_data = np.reshape(RBM_data_flat, (ns, N, N1))
         Engs.append(E(RBM_data))
         Mags.append(M(RBM_data))
@@ -91,4 +91,4 @@ def train_and_plot(nH, T, lr, me, steps, bs, gs):
 
     winsound.Beep(440,1000)
 
-train_and_plot(nH = 64, T = T_range[0], lr = 0.1, me = 25, steps = 25, bs = 200, gs = 1)
+train_and_plot(nH = 64, T = T_range[7], lr = 0.1, me = 25, steps = 25, bs = 50, gs = 1)
