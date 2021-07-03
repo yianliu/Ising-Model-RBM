@@ -4,7 +4,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-'''
+
 # The code below plots the training set
 for i in range(nt):
     T = T_range[i]
@@ -32,8 +32,10 @@ for i in range(nt):
     fig.patch.set_facecolor('w')
     fig.suptitle('Training Data: T = ' + format(T, '.2f'))
     figname = os.path.join('Plots', 'Configurations', 'Training T = ' + format(T, '.2f') + '.jpg')
-    fig.savefig(figname, dpi = 400)'''
-
+    if os.path.isfile(figname):
+       os.remove(figname)
+    fig.savefig(figname, dpi = 400)
+'''
 # The code below plots the RBM generated data
 nH = 64
 for i in range(nt):
@@ -64,4 +66,4 @@ for i in range(nt):
     figname = os.path.join('Plots', 'Configurations', 'RBM nH = ' + str(nH) + ' T = ' + format(T, '.2f') + '.jpg')
     if os.path.isfile(figname):
        os.remove(figname)
-    fig.savefig(figname, dpi = 400)
+    fig.savefig(figname, dpi = 400)'''

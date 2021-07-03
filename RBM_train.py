@@ -28,6 +28,12 @@ for nH in nH_list[2:]:
         samples_flat = np.reshape(samples, (sz, N * N1))
         # lr = lr_nH_64['T = ' + format(T, '.2f')]
         r = RBM(num_visible = 64, num_hidden = nH)
+        if T < 2.2:
+            me = 6000
+            lr = 0.1
+        else:
+            me = 4000
+            lr = 0.01
         r.train(samples_flat, max_epochs = me, learning_rate = lr, batch_size = bs)
         print("Wights at T = " + format(T, '.2f') + ": ", r.weights)
         RBM_data_flat = r.daydream(ns) * 2 - 1 # convert back to -1, 1
