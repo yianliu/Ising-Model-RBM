@@ -11,7 +11,7 @@ import winsound
 # The code below to train an RBM at each temperatureand save the
 # RBM generated data obtained via the daydream method
 
-for nH in nH_list[2:]:
+for nH in nH_list[:1]:
     # nH is the number of hidden nodes of the RBMs
     nH_name = 'nH = ' + str(nH)
 
@@ -28,12 +28,12 @@ for nH in nH_list[2:]:
         samples_flat = np.reshape(samples, (sz, N * N1))
         # lr = lr_nH_64['T = ' + format(T, '.2f')]
         r = RBM(num_visible = 64, num_hidden = nH)
-        if T < 2.2:
-            me = 6000
-            lr = 0.1
-        else:
-            me = 4000
-            lr = 0.01
+        # if T < 2.2:
+        #     me = 6000
+        #     lr = 0.1
+        # else:
+        #     me = 4000
+        #     lr = 0.01
         r.train(samples_flat, max_epochs = me, learning_rate = lr, batch_size = bs, gibbs_steps = gs)
         print("Wights at T = " + format(T, '.2f') + ": ", r.weights)
         RBM_data_flat = r.daydream(num_samples = ns, gibbs_steps = gs) * 2 - 1 # convert back to -1, 1

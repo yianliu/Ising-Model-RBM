@@ -6,7 +6,7 @@ import os
 import matplotlib.pyplot as plt
 
 
-for nH in nH_list[2:]:
+for nH in nH_list[:1]:
     # Uncomment the following if plotting for an individual value of nH
     nH_name = 'nH = ' + str(nH)
 
@@ -126,7 +126,7 @@ M_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'M_vals.npy')
 Cv_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'Cv_vals.npy'))
 X_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'X_vals.npy'))
 
-for nH in nH_list[2:]:
+for nH in nH_list:
     nH_name = 'nH = ' + str(nH)
     obs_path = os.path.join('Data', 'RBM Generated Data', nH_name, 'Observables')
     E_vals_dict[nH_name] = np.load(os.path.join(obs_path, 'E_vals.npy'))
