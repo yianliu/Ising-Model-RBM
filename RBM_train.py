@@ -10,7 +10,7 @@ import winsound
 
 # The code below to train an RBM at each temperatureand save the
 # RBM generated data obtained via the daydream method
-'''
+
 for nH in nH_list:
     # nH is the number of hidden nodes of the RBMs
     nH_name = 'nH = ' + str(nH)
@@ -18,6 +18,8 @@ for nH in nH_list:
     load_path = os.path.join('Data', 'Training Data')
     save_data_path = os.path.join('Data', 'RBM Generated Data', nH_name)
     save_weight_path = os.path.join('Data', 'RBM Parameters', 'Weights', nH_name)
+    save_v_bias_path = os.path.join('Data', 'RBM Parameters', 'Vis Biases', nH_name)
+    save_h_bias_path = os.path.join('Data', 'RBM Parameters', 'Hid Biases', nH_name)
     save_error_path = os.path.join('Data', 'RBM Parameters', 'Errors', nH_name)
 
     def train_and_sample(T):
@@ -38,10 +40,19 @@ for nH in nH_list:
         print("Wights at T = " + format(T, '.2f') + ": ", r.weights)
         RBM_data_flat = r.daydream(num_samples = ns, gibbs_steps = gs) * 2 - 1 # convert back to -1, 1
         RBM_data = np.reshape(RBM_data_flat, (ns, N, N1))
+
         completeSaveData = os.path.join(save_data_path, file_name)
         np.save(completeSaveData, RBM_data)
+
         completeSaveWeight = os.path.join(save_weight_path, file_name)
         np.save(completeSaveWeight, r.weights)
+
+        completeSaveVisBiases = os.path.join(save_v_bias_path, file_name)
+        np.save(completeSaveVisBiases, r.v_bias)
+
+        completeSaveHidBiases = os.path.join(save_h_bias_path, file_name)
+        np.save(completeSaveHidBiases, r.h_bias)
+
         completeSaveError = os.path.join(save_error_path, file_name)
         np.save(completeSaveError, r.errors)
 
@@ -60,7 +71,7 @@ for nH in nH_list:
     if os.path.isfile(plot_name):
        os.remove(plot_name)
     fig.savefig(plot_name, bbox_inches='tight', dpi = 1200)
-    winsound.Beep(440,1000)'''
+    winsound.Beep(440,1000)
 
 
 # The code below is similar to the training code above but it reads the Weights
