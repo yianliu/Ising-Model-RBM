@@ -27,16 +27,20 @@ nH_list = [4, 16, 64]
 bs = 50
 gs = 1
 
+me_continued = 500
+lr_continued = 0.001
+bs_continued = 100
+gs_continued = 5
 
 def T_name(T):
     return'T = ' + format(T, '.2f')
 
-lr_nH_64 = dict()
-lr_nH_64[T_name(T_range[0])] = 0.8
-lr_nH_64[T_name(T_range[1])] = 0.8
-lr_nH_64[T_name(T_range[2])] = 0.02
-lr_nH_64[T_name(T_range[3])] = 0.5
-lr_nH_64[T_name(T_range[4])] = 0.5
-lr_nH_64[T_name(T_range[5])] = 0.01
-lr_nH_64[T_name(T_range[6])] = 0.01
-lr_nH_64[T_name(T_range[7])] = 0.01
+# lr_nH_64 = dict()
+# lr_nH_64[T_name(T_range[0])] = 0.8
+# lr_nH_64[T_name(T_range[1])] = 0.8
+# lr_nH_64[T_name(T_range[2])] = 0.02
+# lr_nH_64[T_name(T_range[3])] = 0.5
+# lr_nH_64[T_name(T_range[4])] = 0.5
+# lr_nH_64[T_name(T_range[5])] = 0.01
+# lr_nH_64[T_name(T_range[6])] = 0.01
+# lr_nH_64[T_name(T_range[7])] = 0.01
