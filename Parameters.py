@@ -18,8 +18,8 @@ mcsteps = 200
 # number of training steps; lr: learning rate; ns: number of samples generated
 # by each RBM; nH_list: list of numbers of hidden nodes; bs: number of
 # configurations in each mini batch) for RBM training and sampling
-me = 1000
-num_snapshots = 10
+me = 1500
+num_snapshots = 15
 # lr = 0.01
 # lr_list contains a list of lr values to be tried on the RBMs
 # lr_list = [0.01, 0.1, 0.2, 0.3, 0.5, 0.6, 0.7, 0.8]

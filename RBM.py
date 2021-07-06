@@ -1,9 +1,10 @@
 import numpy as np
 
 class RBM:
-    def __init__(self, num_visible, num_hidden):
+    def __init__(self, num_visible, num_hidden, T):
         self.num_visible = num_visible
         self.num_hidden = num_hidden
+        self.T = T
         self.debug_print = True
 
         np_rng = np.random.RandomState(1234)
@@ -86,7 +87,7 @@ class RBM:
                 error += batch_error / batch_size
             self.errors.append(error)
             if self.debug_print:
-                print("Epoch %s: error is %s" % (epoch, error))
+                print('T = ' + format(self.T, '.2f') + "Epoch %s: error is %s" % (epoch, error))
 
     def daydream(self, num_samples, gibbs_steps):
         samples = np.ones((num_samples, self.num_visible))
