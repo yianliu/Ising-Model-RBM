@@ -7,10 +7,15 @@ import os
 import matplotlib.pyplot as plt
 import winsound
 
+def nH_and_T_name(nH, T):
+    return 'nH = ' + str(nH) + ', T = ' + format(T, '.2f')
+
+RBMs = dict()
+
 # The code below to train an RBM at each temperatureand save the
 # RBM generated data obtained via the daydream method
 
-for nH in nH_list[2:]:
+for nH in nH_list:
     # nH is the number of hidden nodes of the RBMs
     nH_name = 'nH = ' + str(nH)
 
@@ -35,7 +40,7 @@ for nH in nH_list[2:]:
                 lr = 0.01
                 bs = 50
                 gs = 1
-            elif 500 < epochs_snapshot <= 100:
+            elif 500 < epochs_snapshot <= 1000:
                 lr = 0.001
                 bs = 100
                 gs = 5
@@ -61,6 +66,8 @@ for nH in nH_list[2:]:
             np.save(completeSaveHidBiases, r.h_bias)
 
         print("Wights at T = " + format(T, '.2f') + ": ", r.weights)
+
+        RBMs[nH_and_T_name(nH, T)] = r
         RBM_data_flat = r.daydream(num_samples = ns, gibbs_steps = gs) * 2 - 1 # convert back to -1, 1
         RBM_data = np.reshape(RBM_data_flat, (ns, N, N1))
 

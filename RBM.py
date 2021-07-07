@@ -87,7 +87,7 @@ class RBM:
                 error += batch_error / batch_size
             self.errors.append(error)
             if self.debug_print:
-                print('T = ' + format(self.T, '.2f') + "Epoch %s: error is %s" % (epoch, error))
+                print('T = ' + format(self.T, '.2f') + " Epoch %s: error is %s" % (epoch, error))
 
     def daydream(self, num_samples, gibbs_steps):
         samples = np.ones((num_samples, self.num_visible))
