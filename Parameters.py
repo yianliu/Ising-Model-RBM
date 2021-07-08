@@ -20,6 +20,7 @@ mcsteps = 200
 # configurations in each mini batch) for RBM training and sampling
 me = 1500
 num_snapshots = 15
+snapshot_list = [0, 1, 2, 3, 4, 9, 14]
 # lr = 0.01
 # lr_list contains a list of lr values to be tried on the RBMs
 # lr_list = [0.01, 0.1, 0.2, 0.3, 0.5, 0.6, 0.7, 0.8]

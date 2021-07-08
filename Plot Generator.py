@@ -148,12 +148,12 @@ for nH in nH_list:
     X_errs_dict[n_name] = np.load(os.path.join(obs_path, 'X_errs.npy'))
 
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows = 2, ncols = 2, figsize=(8,7))
-fig.suptitle('Thermal Observables', fontweight = 'bold')
+fig.suptitle('Thermodynamic Observables', fontweight = 'bold')
 for key in E_vals_dict:
-    ax1.errorbar(T_range, E_vals_dict[key], yerr = E_errs_dict[key], marker = 'o', ls = '-', lw = 1.4, capsize = 2, elinewidth = 1.5, label = key)
-    ax2.errorbar(T_range, M_vals_dict[key], yerr = M_errs_dict[key], marker = 'o', ls = '-', lw = 1.4, capsize = 2, elinewidth = 1.5, label = key)
-    ax3.errorbar(T_range, Cv_vals_dict[key], yerr = Cv_errs_dict[key], marker = 'o', ls = '-', lw = 1.4, capsize = 2, elinewidth = 1.5, label = key)
-    ax4.errorbar(T_range, X_vals_dict[key], yerr = X_errs_dict[key], marker = 'o', ls = '-', lw = 1.4, capsize = 2, elinewidth = 1.5, label = key)
+    ax1.errorbar(T_range, E_vals_dict[key], yerr = E_errs_dict[key], marker = 'o', ls = '-', lw = 1.3, capsize = 1.5, elinewidth = 1.3, label = key)
+    ax2.errorbar(T_range, M_vals_dict[key], yerr = M_errs_dict[key], marker = 'o', ls = '-', lw = 1.3, capsize = 1.5, elinewidth = 1.3, label = key)
+    ax3.errorbar(T_range, Cv_vals_dict[key], yerr = Cv_errs_dict[key], marker = 'o', ls = '-', lw = 1.3, capsize = 1.5, elinewidth = 1.3, label = key)
+    ax4.errorbar(T_range, X_vals_dict[key], yerr = X_errs_dict[key], marker = 'o', ls = '-', lw = 1.3, capsize = 1.5, elinewidth = 1.3, label = key)
 
 ax1.set_title('Energy', fontdict = myfont_m)
 ax1.set_xlabel('T', fontdict = myfont_s)
@@ -182,7 +182,7 @@ fig.legend(handles, labels, loc ='right', bbox_to_anchor=(1.15, 0.5))
 
 plt.tight_layout(pad = 1.5)
 
-plot_path = os.path.join('Plots', 'RBM Output', 'Thermal Observables.jpg')
+plot_path = os.path.join('Plots', 'RBM Output', 'Thermodynamic Observables.jpg')
 if os.path.isfile(plot_path):
    os.remove(plot_path)
 fig.savefig(plot_path, bbox_inches = 'tight', dpi = 1200)
