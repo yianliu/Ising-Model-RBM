@@ -5,7 +5,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-
+'''
 for nH in nH_list:
     # Uncomment the following if plotting for an individual value of nH
     nH_name = 'nH = ' + str(nH)
@@ -43,7 +43,7 @@ for nH in nH_list:
     np.save(os.path.join(obs_path, 'Cv_errs.npy'), Cv_errs)
     np.save(os.path.join(obs_path, 'X_vals.npy'), X_vals)
     np.save(os.path.join(obs_path, 'X_errs.npy'), X_errs)
-
+'''
 '''
     # The following chunk of code plot individual thermal observable plots for
     # each nH value and saves the figure in the corresponding directory
@@ -116,31 +116,43 @@ for nH in nH_list:
 # Below are for all data plots
 
 E_vals_dict = dict()
+E_errs_dict = dict()
 M_vals_dict = dict()
+M_errs_dict = dict()
 Cv_vals_dict = dict()
+Cv_errs_dict = dict()
 X_vals_dict = dict()
+X_errs_dict = dict()
 
 training_data_path = os.path.join('Data', 'Training Data', 'Observables')
 E_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'E_vals.npy'))
+E_errs_dict['Training'] = np.load(os.path.join(training_data_path, 'E_errs.npy'))
 M_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'M_vals.npy'))
+M_errs_dict['Training'] = np.load(os.path.join(training_data_path, 'M_errs.npy'))
 Cv_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'Cv_vals.npy'))
+Cv_errs_dict['Training'] = np.load(os.path.join(training_data_path, 'Cv_errs.npy'))
 X_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'X_vals.npy'))
+X_errs_dict['Training'] = np.load(os.path.join(training_data_path, 'X_errs.npy'))
 
 for nH in nH_list:
     nH_name = 'nH = ' + str(nH)
     obs_path = os.path.join('Data', 'RBM Generated Data', nH_name, 'Observables')
     E_vals_dict[nH_name] = np.load(os.path.join(obs_path, 'E_vals.npy'))
+    E_errs_dict[nH_name] = np.load(os.path.join(obs_path, 'E_errs.npy'))
     M_vals_dict[nH_name] = np.load(os.path.join(obs_path, 'M_vals.npy'))
+    M_errs_dict[nH_name] = np.load(os.path.join(obs_path, 'M_errs.npy'))
     Cv_vals_dict[nH_name] = np.load(os.path.join(obs_path, 'Cv_vals.npy'))
+    Cv_errs_dict[nH_name] = np.load(os.path.join(obs_path, 'Cv_errs.npy'))
     X_vals_dict[nH_name] = np.load(os.path.join(obs_path, 'X_vals.npy'))
+    X_errs_dict[nH_name] = np.load(os.path.join(obs_path, 'X_errs.npy'))
 
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows = 2, ncols = 2, figsize=(8,7))
 fig.suptitle('Thermal Observables', fontweight = 'bold')
 for key in E_vals_dict:
-    ax1.plot(T_range, E_vals_dict[key], marker = 'o', ls = '-', label = key)
-    ax2.plot(T_range, M_vals_dict[key], marker = 'o', ls = '-', label = key)
-    ax3.plot(T_range, Cv_vals_dict[key], marker = 'o', ls = '-', label = key)
-    ax4.plot(T_range, X_vals_dict[key], marker = 'o', ls = '-', label = key)
+    ax1.errorbar(T_range, E_vals_dict[key], yerr = E_errs_dict[key], marker = 'o', ls = '-', lw = 1.4, capsize = 2, elinewidth = 1.5, label = key)
+    ax2.errorbar(T_range, M_vals_dict[key], yerr = M_errs_dict[key], marker = 'o', ls = '-', lw = 1.4, capsize = 2, elinewidth = 1.5, label = key)
+    ax3.errorbar(T_range, Cv_vals_dict[key], yerr = Cv_errs_dict[key], marker = 'o', ls = '-', lw = 1.4, capsize = 2, elinewidth = 1.5, label = key)
+    ax4.errorbar(T_range, X_vals_dict[key], yerr = X_errs_dict[key], marker = 'o', ls = '-', lw = 1.4, capsize = 2, elinewidth = 1.5, label = key)
 
 ax1.set_title('Energy', fontdict = myfont_m)
 ax1.set_xlabel('T', fontdict = myfont_s)
