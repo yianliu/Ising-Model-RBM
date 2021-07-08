@@ -84,10 +84,10 @@ class RBM:
                 self.weights += learning_rate * W_gradient / batch_size
                 self.v_bias += learning_rate * v_bias_gradient
                 self.h_bias += learning_rate * h_bias_gradient
-                error += batch_error / batch_size
+                error += batch_error / num_examples
             self.errors.append(error)
             if self.debug_print:
-                print('T = ' + format(self.T, '.2f') + " Epoch %s: error is %s" % (epoch, error))
+                print('T = ' + format(self.T, '.2f') + " Epoch %s: error is %s" % (epoch, int(error)))
 
     def daydream(self, num_samples, gibbs_steps):
         samples = np.ones((num_samples, self.num_visible))
