@@ -15,7 +15,7 @@ RBMs = dict()
 # The code below to train an RBM at each temperatureand save the
 # RBM generated data obtained via the daydream method
 
-for nH in nH_list[:1]:
+for nH in nH_list:
     # nH is the number of hidden nodes of the RBMs
     nH_name = 'nH = ' + str(nH)
 
@@ -36,18 +36,18 @@ for nH in nH_list[:1]:
         interval_epochs = int(me / num_snapshots)
         for snapshot in range(num_snapshots):
             epochs_snapshot = (snapshot + 1) * interval_epochs
-            # if epochs_snapshot <= 500:
-            #     lr = 0.01
-            #     bs = 50
-            #     gs = 1
-            # elif 500 < epochs_snapshot <= 1000:
-            #     lr = 0.001
-            #     bs = 100
-            #     gs = 5
-            # else:
-            #     lr = 0.0001
-            #     bs = 200
-            #     gs = 10
+            if epochs_snapshot <= 500:
+                lr = 0.01
+                bs = 50
+                gs = 1
+            elif 500 < epochs_snapshot <= 1000:
+                lr = 0.001
+                bs = 100
+                gs = 5
+            else:
+                lr = 0.0001
+                bs = 200
+                gs = 10
             r.train(samples_flat, max_epochs = interval_epochs, learning_rate = lr, batch_size = bs, gibbs_steps = gs)
             save_weight_snapshot_path = os.path.join(save_weight_path, 'Epochs = ' + str(epochs_snapshot))
             save_v_bias_snapshot_path = os.path.join(save_v_bias_path, 'Epochs = ' + str(epochs_snapshot))
