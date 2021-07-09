@@ -16,7 +16,7 @@ def weight_to_couplings(W, c):
             H[i,j] = np.sum(np.log(numerator / denominator)) / 8
     return H
 
-
+'''
 for nH in nH_list:
     nH_name = 'nH = ' + str(nH)
     save_plot_path = os.path.join('Plots', 'Couplings', nH_name)
@@ -53,3 +53,50 @@ for nH in nH_list:
         if os.path.isfile(figname):
            os.remove(figname)
         fig.savefig(figname, dpi = 1200)
+
+# The following code plots out the histograms of the couplings
+for nH in nH_list:
+    nH_name = 'nH = ' + str(nH)
+    n_name = 'n = ' + str(nH)
+    save_plot_path = os.path.join('Plots', 'Couplings', 'Histograms')
+    save_couplings_path = os.path.join('Data', 'RBM Parameters', 'Couplings', nH_name)
+    fig, axes = plt.subplots(nrows = 2, ncols = 4, figsize=(10,5))
+    for i, ax in enumerate(fig.axes):
+        T = T_range[i]
+        file_name = 'T = ' + format(T, '.2f') + '.npy'
+        interval_epochs = int(me / num_snapshots)
+        H = np.load(os.path.join(save_couplings_path, file_name))[-1].flatten()
+        ax.hist(H, bins = 50)
+        ax.set_title('T = ' + format(T, '.2f'))
+    fig.suptitle(n_name, size = 15)
+    plt.tight_layout(pad = 2)
+    figname = os.path.join(save_plot_path, nH_name + '.jpg')
+    if os.path.isfile(figname):
+       os.remove(figname)
+    fig.savefig(figname, dpi = 1200)'''
+
+
+# The following code plots out the histograms of the couplings away from the origin
+for nH in nH_list:
+    nH_name = 'nH = ' + str(nH)
+    n_name = 'n = ' + str(nH)
+    save_plot_path = os.path.join('Plots', 'Couplings', 'Histograms')
+    save_couplings_path = os.path.join('Data', 'RBM Parameters', 'Couplings', nH_name)
+    fig, axes = plt.subplots(nrows = 2, ncols = 4, figsize=(10,5))
+    for i, ax in enumerate(fig.axes):
+        T = T_range[i]
+        file_name = 'T = ' + format(T, '.2f') + '.npy'
+        interval_epochs = int(me / num_snapshots)
+        H = np.load(os.path.join(save_couplings_path, file_name))[-1].flatten()
+        try:
+            bins = np.linspace(0.1, max(H), num = 50)
+            ax.hist(H, bins = bins)
+        except:
+            ax.hist(H, bins = 50)
+        ax.set_title('T = ' + format(T, '.2f'))
+    fig.suptitle(n_name, size = 15)
+    plt.tight_layout(pad = 2)
+    figname = os.path.join(save_plot_path, 'non-zero' + nH_name + '.jpg')
+    if os.path.isfile(figname):
+       os.remove(figname)
+    fig.savefig(figname, dpi = 1200)
