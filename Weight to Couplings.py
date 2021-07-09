@@ -27,13 +27,13 @@ for nH in nH_list:
         H_arr = np.zeros((num_snapshots, 64, 64))
         file_name = 'T = ' + format(T, '.2f') + '.npy'
         interval_epochs = int(me / num_snapshots)
-        for snapshot in range(num_snapshots):
-            epochs_snapshot = (snapshot + 1) * interval_epochs
-            epoch_name = 'Epochs = ' + str(epochs_snapshot)
-            W = np.load(os.path.join(weight_path, epoch_name, file_name))
-            c = np.load(os.path.join(h_bias_path, epoch_name, file_name))
-            H_arr[snapshot] = weight_to_couplings(W, c)
-        np.save(os.path.join(save_couplings_path, file_name), H_arr)
+        # for snapshot in range(num_snapshots):
+        #     epochs_snapshot = (snapshot + 1) * interval_epochs
+        #     epoch_name = 'Epochs = ' + str(epochs_snapshot)
+        #     W = np.load(os.path.join(weight_path, epoch_name, file_name))
+        #     c = np.load(os.path.join(h_bias_path, epoch_name, file_name))
+        #     H_arr[snapshot] = weight_to_couplings(W, c)
+        # np.save(os.path.join(save_couplings_path, file_name), H_arr)
 
         H_arr = np.load(os.path.join(save_couplings_path, file_name))
         fig, axes = plt.subplots(nrows = 2, ncols = 3, figsize=(10,7))
@@ -42,7 +42,7 @@ for nH in nH_list:
             epochs_snapshot = (snapshot + 1) * interval_epochs
             epoch_name = 'Epochs = ' + str(epochs_snapshot)
             H = H_arr[snapshot]
-            im = ax.imshow(H, label = epoch_name)
+            im = ax.matshow(H, label = epoch_name, cmap = 'inferno')
             ax.set_xticks([])
             ax.set_yticks([])
             ax.set_title(epoch_name)
