@@ -142,3 +142,32 @@ for nH in nH_list:
 
 # The following code plots the nearest-neighbour couplings against expectation from Ising model
 # (reproduce fig. 11 in Cossu et al)
+
+def H_temp_dep(H_nn, T):
+    H_temp = H_nn * (2 * T)
+    return [np.mean(H_temp), np.std(H_temp)]
+
+fig, ax = plt.subplots(figsize = (5,4))
+fig.suptitle('Comparison of Normalised Nearest-Neighbour Couplings', size = 13)
+ax.axhline(y = 1, color = 'k', lw = 1.4, label = 'Ising Model')
+for nH in nH_list:
+    nH_name = 'nH = ' + str(nH)
+    n_name = 'n = ' + str(nH)
+    save_plot_path = os.path.join('Plots', 'Couplings', 'Nearest Neighbour Comparison')
+    load_nn_couplings_path = os.path.join('Data', 'RBM Parameters', 'Couplings', 'Nearest Neighbour', nH_name)
+    H_temp_list = []
+
+    for T in T_range:
+        file_name = 'T = ' + format(T, '.2f') + '.npy'
+        H_nn = np.load(os.path.join(load_nn_couplings_path, file_name))
+        H_temp_list.append(H_temp_dep(H_nn, T))
+    [H_temp_vals, H_temp_std] = np.transpose(H_temp_list)
+    ax.errorbar(T_range, H_temp_vals, yerr = H_temp_std, marker = 'o', ls = '', lw = 1.4, capsize = 2, ecolor = 'C7', elinewidth = 1.5, label = n_name)
+    ax.legend(loc = 'right', bbox_to_anchor = (0.98, 0.4))
+    ax.set_ylabel(r'$\dfrac{\langle H_{j_1 j_2} \rangle}{\frac{1}{2T}}$', rotation = 0, labelpad = 20)
+    plt.tight_layout()
+    figname = os.path.join(save_plot_path, 'Nearest Neighbour Comparison.jpg')
+    if os.path.isfile(figname):
+       os.remove(figname)
+    fig.savefig(figname, bbox_inches = 'tight', dpi = 1200)
+    
