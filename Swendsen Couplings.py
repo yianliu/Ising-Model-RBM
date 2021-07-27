@@ -57,3 +57,36 @@ coup_next_nn = Coupling(sites = ((-1, -1), (-1, 1), (1, -1), (1, 1)), order = 2)
 
 # coupling between spins that are 2 sites apart (K4 in CHung & Kao)
 coup_2 = Coupling(sites = ((-2, 0), (2, 0), (0, -2), (0, 2)), order = 2)
+
+
+# Hamiltoians are defined as dictionaries
+
+def Hl_spin_indep(Ham, spins, l):
+    Hl = 0
+    for coup, K in Ham.items():
+        Sl = coup.S(spins, l)
+        Hl += K * Sl
+    return Hl
+
+def cor_fun_ind(coup_a, coup_b, Ham, spins, l):
+    Hl = 0
+    for coup, K in Ham.items():
+        Sl = coup.S(spins, l)
+        Hl += K * Sl
+    Sl_a = coup_a.S(spins, l)
+    Sl_b = coup_b.S(spins, l)
+    val = Sl_a * Sl_b / np.cosh(Hl)**2
+    return val
+
+def partial_der(coup_a, coup_b, Ham, spins_lst):
+    ma = coup_a.order
+    num_spins, m, n = spins_lst.shape
+    cor_fun = np.zeros((m, n))
+    for la in range(m):
+        for lb in range(n):
+            l = [la, lb]
+            val = 0
+            for spins in spins_lst:
+                val += cor_fun_ind(coup_a, coup_b, Ham, spins, l) / num_spins
+            cor_fun[la, lb] = val
+    return np.sum(cor_fun) / ma
