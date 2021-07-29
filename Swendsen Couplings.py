@@ -10,6 +10,7 @@ class Coupling:
         self.sites = sites
         self.order = order
         self.bound_cond = bound_cond
+        self.all_sites_operator = all_sites_operator
 
     # S is the specific spin-indpendent coupling at site l
     # The type of coupling it calculates depends on the argument coup_lst
@@ -57,19 +58,59 @@ def nn_all_sites(spins):
                 la_new = la + i
                 lb_new = lb + j
                 val += spins[la, lb] * spins[la_new, lb_new]
-    for #Add last column and row here
+    for lb in range(n - 1):
+        val += spins[m - 1, lb] * spins[m - 1, lb + 1]
+    for la in range(m - 1):
+        val += spins[la, n - 1] * spins[la + 1, n - 1]
     return val
 
-coup_nn = Coupling(sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2)
+coup_nn = Coupling(sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2, all_sites_operator = nn_all_sites)
+
 
 # nearest neighbour coupling for the boundary spins
-coup_nn_bound = Coupling(sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2, bound_cond = True)
+
+def nn_bound_all_sites(spins):
+    m, n = spins.shape
+    val = 0
+    for la in range(m):
+        val += spins[la, 0] * spins[la, n - 1]
+    for lb in range(n):
+        val += spins[0, lb] * spins[m - 1, lb]
+    return val
+coup_nn_bound = Coupling(sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2, bound_cond = True, all_sites_operator = nn_bound_all_sites)
 
 # next nearest neighbour coupling
-coup_next_nn = Coupling(sites = ((-1, -1), (-1, 1), (1, -1), (1, 1)), order = 2)
+
+def next_nn_all_sites(spins):
+    m, n = spins.shape
+    val = 0
+    for la in range(m - 1):
+        for lb in range(n - 1):
+            val += spins[la, lb] * spins[la + 1, lb + 1]
+    for la in range(1, m):
+        for lb in range(n - 1):
+            val += spins[la, lb] * spins[la - 1, lb + 1]
+    return val
+
+coup_next_nn = Coupling(sites = ((-1, -1), (-1, 1), (1, -1), (1, 1)), order = 2, all_sites_operator = next_nn_all_sites)
 
 # coupling between spins that are 2 sites apart (K4 in CHung & Kao)
-coup_2 = Coupling(sites = ((-2, 0), (2, 0), (0, -2), (0, 2)), order = 2)
+def coup_2_all_sites(spins):
+    m, n = spins.shape
+    val = 0
+    for la in range(m - 2):
+        for lb in range(n - 2):
+            for i, j in ((0, 2), (2, 0)):
+                la_new = la + i
+                lb_new = lb + j
+                val += spins[la, lb] * spins[la_new, lb_new]
+    for lb in range(n - 2):
+        val += spins[m - 1, lb] * spins[m - 1, lb + 2]
+    for la in range(m - 2):
+        val += spins[la, n - 1] * spins[la + 2, n - 1]
+    return val
+
+coup_2 = Coupling(sites = ((-2, 0), (2, 0), (0, -2), (0, 2)), order = 2, all_sites_operator = coup_2_all_sites)
 
 
 # Hamiltoians are defined as lists
@@ -101,7 +142,7 @@ def partial_der(coup_a, coup_b, Ham, spins_lst):
 
 confgs = np.load(os.path.join('Data', 'Training Data', 'T = 2.50.npy'))
 H = [[coup_nn, 1], [coup_nn_bound, 0], [coup_next_nn, 0.1]]
-partial_der(coup_nn, coup_next_nn, H, confgs)
+# partial_der(coup_nn, coup_next_nn, H, confgs)
 
 def Jacobian(Ham, spins_lst):
     num_coup = len(Ham)
@@ -133,4 +174,4 @@ def f(coup_a, Ham, spins_lst): # S tilde - S correlation function
             print(str(l) + ': ' + str(cor_fun[la, lb]))
     S_tilde = np.sum(cor_fun) / ma
     return S_tilde
-# f(coup_nn, H, confgs)
+f(coup_nn, H, confgs)
