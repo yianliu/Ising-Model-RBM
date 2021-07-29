@@ -154,14 +154,14 @@ def Jacobian(Ham, spins_lst):
 
 # Jacobian(H, confgs)
 
-def f(coup_a, Ham, spins_lst): # S tilde - S correlation function
+def S_diff(coup_a, Ham, spins_lst): # S tilde - S correlation function
     num_spins, m, n = spins_lst.shape
     ma = coup_a.order
     cor_fun = np.zeros((m, n))
     for la in range(m):
         for lb in range(n):
             l = [la, lb]
-            val_lst = np.zeros(num_spins)
+            val = 0
             for i, spins in enumerate(spins_lst):
                 Hl = 0
                 for coup, K in Ham:
@@ -169,9 +169,11 @@ def f(coup_a, Ham, spins_lst): # S tilde - S correlation function
                     Hl += K * Sl
                     if coup is coup_a:
                         Sl_a = Sl
-                val_lst[i] = Sl_a * np.tanh(Hl)
-            cor_fun[la, lb] = np.mean(val_lst)
+                val += Sl_a * np.tanh(Hl) / num_spins
+            cor_fun[la, lb] = val
             print(str(l) + ': ' + str(cor_fun[la, lb]))
     S_tilde = np.sum(cor_fun) / ma
-    return S_tilde
-f(coup_nn, H, confgs)
+    S_lst = [coup_nn.all_sites_operator(spins) for spins in spins_lst]
+    S = np.mean(S_lst)
+    return S_tilde - S
+S_diff(coup_nn, H, confgs)
