@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import time
 
 class Coupling:
-    def __init__(self, sites, order, bound_cond = False):
+    def __init__(self, sites, order, all_sites_operator, bound_cond = False):
         self.sites = sites
         self.order = order
         self.bound_cond = bound_cond
@@ -24,7 +24,7 @@ class Coupling:
                 if la_new in range(m) and lb_new in range(n):
                     val += spins[la_new, lb_new]
         elif (la in [0, m - 1] or lb in [0, n - 1]):
-            print('boundary')
+            # print('boundary')
             for i, j in self.sites:
                 la_new = la + i
                 lb_new = lb + j
@@ -33,20 +33,33 @@ class Coupling:
                 else:
                     if la_new < 0:
                         la_new += m
-                        print('find bottom')
+                        # print('find bottom')
                     elif la_new > m - 1:
                         la_new -= m
-                        print('find top')
+                        # print('find top')
                     if lb_new < 0:
                         lb_new += n
-                        print('find right')
+                        # print('find right')
                     elif lb_new > n - 1:
                         lb_new -= n
-                        print('find left')
+                        # print('find left')
                     val += spins[la_new, lb_new]
         return val
 
+
 # nearest neighbour coupling
+def nn_all_sites(spins):
+    m, n = spins.shape
+    val = 0
+    for la in range(m - 1):
+        for lb in range(n - 1):
+            for i, j in ((0, 1), (1, 0)):
+                la_new = la + i
+                lb_new = lb + j
+                val += spins[la, lb] * spins[la_new, lb_new]
+    for #Add last column and row here
+    return val
+
 coup_nn = Coupling(sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2)
 
 # nearest neighbour coupling for the boundary spins
@@ -59,34 +72,65 @@ coup_next_nn = Coupling(sites = ((-1, -1), (-1, 1), (1, -1), (1, 1)), order = 2)
 coup_2 = Coupling(sites = ((-2, 0), (2, 0), (0, -2), (0, 2)), order = 2)
 
 
-# Hamiltoians are defined as dictionaries
-
-def Hl_spin_indep(Ham, spins, l):
-    Hl = 0
-    for coup, K in Ham.items():
-        Sl = coup.S(spins, l)
-        Hl += K * Sl
-    return Hl
+# Hamiltoians are defined as lists
 
 def cor_fun_ind(coup_a, coup_b, Ham, spins, l):
     Hl = 0
-    for coup, K in Ham.items():
+    for coup, K in Ham:
         Sl = coup.S(spins, l)
         Hl += K * Sl
-    Sl_a = coup_a.S(spins, l)
-    Sl_b = coup_b.S(spins, l)
+        if coup is coup_a:
+            Sl_a = Sl
+        if coup is coup_b:
+            Sl_b = Sl
     val = Sl_a * Sl_b / np.cosh(Hl)**2
     return val
 
 def partial_der(coup_a, coup_b, Ham, spins_lst):
+    start = time.time()
     ma = coup_a.order
     num_spins, m, n = spins_lst.shape
     cor_fun = np.zeros((m, n))
     for la in range(m):
         for lb in range(n):
             l = [la, lb]
-            val = 0
-            for spins in spins_lst:
-                val += cor_fun_ind(coup_a, coup_b, Ham, spins, l) / num_spins
-            cor_fun[la, lb] = val
+            val_lst = [cor_fun_ind(coup_a, coup_b, Ham, spins, l) for spins in spins_lst]
+            cor_fun[la, lb] = np.mean(val_lst)
+            print(str(l) + ', time = ' + format(time.time() - start, '.2f'))
     return np.sum(cor_fun) / ma
+
+confgs = np.load(os.path.join('Data', 'Training Data', 'T = 2.50.npy'))
+H = [[coup_nn, 1], [coup_nn_bound, 0], [coup_next_nn, 0.1]]
+partial_der(coup_nn, coup_next_nn, H, confgs)
+
+def Jacobian(Ham, spins_lst):
+    num_coup = len(Ham)
+    Jac = np.zeros((num_coup, num_coup))
+    for a in range(num_coup):
+        coup_a = Ham[a][0]
+        Jac[a, :] = [partial_der(coup_a, Ham[b][0], Ham, spins_lst) for b in range(num_coup)]
+    return Jac
+
+# Jacobian(H, confgs)
+
+def f(coup_a, Ham, spins_lst): # S tilde - S correlation function
+    num_spins, m, n = spins_lst.shape
+    ma = coup_a.order
+    cor_fun = np.zeros((m, n))
+    for la in range(m):
+        for lb in range(n):
+            l = [la, lb]
+            val_lst = np.zeros(num_spins)
+            for i, spins in enumerate(spins_lst):
+                Hl = 0
+                for coup, K in Ham:
+                    Sl = coup.S(spins, l)
+                    Hl += K * Sl
+                    if coup is coup_a:
+                        Sl_a = Sl
+                val_lst[i] = Sl_a * np.tanh(Hl)
+            cor_fun[la, lb] = np.mean(val_lst)
+            print(str(l) + ': ' + str(cor_fun[la, lb]))
+    S_tilde = np.sum(cor_fun) / ma
+    return S_tilde
+# f(coup_nn, H, confgs)
