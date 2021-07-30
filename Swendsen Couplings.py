@@ -1,6 +1,7 @@
 from Parameters import *
 from MyFonts import *
 import numpy as np
+import copy
 import os
 import matplotlib.pyplot as plt
 import time
@@ -144,8 +145,8 @@ def partial_der(coup_a, coup_b, Ham, spins_lst):
             print(str(l) + ', time = ' + format(time.time() - start, '.2f'))
     return np.sum(cor_fun) / ma
 
-confgs = np.load(os.path.join('Data', 'Training Data', 'T = 2.50.npy'))
-H = [[coup_nn, 1], [coup_nn_bound, 0], [coup_next_nn, 0.1]]
+# confgs = np.load(os.path.join('Data', 'Training Data', 'T = 2.50.npy'))
+# H = [[coup_nn, 0.4], [coup_nn_bound, 0.1], [coup_next_nn, 0.1]]
 # partial_der(coup_nn, coup_next_nn, H, confgs)
 
 def Jacobian(Ham, spins_lst):
@@ -183,7 +184,7 @@ def S_diff(coup_a, Ham, spins_lst): # S tilde - S correlation function
 # S_diff(coup_nn, H, confgs)
 
 def Jac_and_diff(Ham, spins_lst):
-    start = time.time()
+    # start = time.time()
     num_coup = len(Ham)
     num_spins, m, n = spins_lst.shape
     K = np.asarray([i[1] for i in Ham])
@@ -211,7 +212,7 @@ def Jac_and_diff(Ham, spins_lst):
                     # coup_b = Coups[b]
                     S_b = S_lst_res[b]
                     S_par_lst_loc[b] += S_a * S_b / (np.cosh(H_l) ** 2 * num_spins)
-            print(str(coup_a) + str(l) + ', time = ' + format(time.time() - start, '.2f'))
+            # print(str(coup_a) + str(l) + ', time = ' + format(time.time() - start, '.2f'))
             return S_tilde_loc, S_par_lst_loc
         S_tilde_l, S_par_lst_l = np.apply_along_axis(comp_cor, 1, ind_lst).T
         S_tilde = np.sum(S_tilde_l) / ma
@@ -221,6 +222,97 @@ def Jac_and_diff(Ham, spins_lst):
         S_diff[a] = S_tilde - S
         Jac[a, :] = S_par_lst
     return Jac, S_diff
-Jac_and_diff(H, confgs)
+# Jac_and_diff(H, confgs)
 
-def Newton_Raphdson(T, nH, )
+def error(lst):
+    return np.std(lst, ddof = 1) / np.sqrt(np.size(lst))
+
+def Newton_Raphdson(T, nH, bs_n, Ham, num_itr):
+    start = time.time()
+    file_name = 'T = ' + format(T, '.2f') + '.npy'
+    nH_name = 'nH = ' + str(nH)
+    data_path = os.path.join('Data', 'RBM Generated Data', nH_name, file_name)
+    samples = np.load(data_path)
+    np.random.shuffle(samples)
+    data_bs_sets = np.split(samples, bs_n)
+    K = np.tile(np.asarray([i[1] for i in Ham]), (bs_n, 1))
+    K_lst = []
+    for itr in range(num_itr):
+        print('Iteration', itr + 1)
+        for bs_ind, dataset in enumerate(data_bs_sets):
+            K_loc = K[bs_ind, :]
+            for i in range(len(Ham)):
+                Ham[i][1] = K_loc[i]
+            Jac, S_diff = Jac_and_diff(Ham, dataset)
+            h = np.linalg.solve(Jac, - S_diff)
+            K_loc += h
+            K[bs_ind, :] = K_loc
+            print('Dataset', bs_ind + 1, 'finished' + ', time = ' + format(time.time() - start, '.2f'))
+            print('Couplings:', K_loc)
+        K_lst.append(copy.deepcopy(K))
+        # print('Iteration', itr + 1, K)
+    K_means_errs = np.stack((np.apply_along_axis(np.mean, 0, K_lst[-1]), np.apply_along_axis(error, 0, K_lst[-1])))
+    return K_means_errs, K_lst
+
+def Newton_Raphdson_MCMC(T, bs_n, Ham, num_itr):
+    start = time.time()
+    file_name = 'T = ' + format(T, '.2f') + '.npy'
+    data_path = os.path.join('Data', 'Training Data', file_name)
+    samples = np.load(data_path)
+    np.random.shuffle(samples)
+    data_bs_sets = np.split(samples, bs_n)
+    K = np.tile(np.asarray([i[1] for i in Ham]), (bs_n, 1))
+    K_lst = []
+    for itr in range(num_itr):
+        print('Iteration', itr + 1)
+        for bs_ind, dataset in enumerate(data_bs_sets):
+            K_loc = K[bs_ind, :]
+            for i in range(len(Ham)):
+                Ham[i][1] = K_loc[i]
+            Jac, S_diff = Jac_and_diff(Ham, dataset)
+            h = np.linalg.solve(Jac, - S_diff)
+            K_loc += h
+            K[bs_ind, :] = K_loc
+            print('Dataset', bs_ind + 1, 'finished' + ', time = ' + format(time.time() - start, '.2f'))
+            print(K_loc)
+        K_lst.append(copy.deepcopy(K))
+        # print('Iteration', itr + 1, K)
+    K_means_errs = np.stack((np.apply_along_axis(np.mean, 0, K_lst[-1]), np.apply_along_axis(error, 0, K_lst[-1])))
+    return K_means_errs, K_lst
+
+# H_1 = [[coup_nn, 0.4], [coup_nn_bound, 0.1], [coup_next_nn, 0.1]]
+# nH = 64
+# nH_name = 'nH = ' + str(nH)
+# coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, 'H_1')
+#
+# for T in T_range:
+#     file_name = 'T = ' + format(T, '.2f') + '.npy'
+#     lst_path = os.path.join(coup_path, 'K List', file_name)
+#     vals_path = os.path.join(coup_path, 'K Means and Errors', file_name)
+#     K_means_errs, K_lst = Newton_Raphdson(T, nH, bs_n = 10, Ham = H_1, num_itr = 4)
+#     np.save(lst_path, K_lst)
+#     np.save(vals_path, K_means_errs)
+#     print('T = ' + format(T, '.2f') + ':', K_means_errs)
+
+# for T in T_range:
+#     file_name = 'T = ' + format(T, '.2f') + '.npy'
+#     vals_path = os.path.join(coup_path, 'K Means and Errors', file_name)
+#     K_means_errs = np.load(vals_path)
+#     print('\nT = ' + format(T, '.2f'))
+#     for i, [val, err] in enumerate(K_means_errs.T):
+#         print('K' + str(i + 1) + ' = ' + format(val, '.5f'), u"\u00B1", format(err, '.5f'))
+
+H_2 = [[coup_nn, 0.4], [coup_next_nn, 0], [coup_2, 0]]
+nH = 64
+nH_name = 'nH = ' + str(nH)
+coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, 'H_2')
+
+for T in T_range:
+    file_name = 'T = ' + format(T, '.2f') + '.npy'
+    lst_path = os.path.join(coup_path, 'K List', file_name)
+    vals_path = os.path.join(coup_path, 'K Means and Errors', file_name)
+    K_means_errs, K_lst = Newton_Raphdson(T, nH, bs_n = 10, Ham = H_2, num_itr = 4)
+    np.save(lst_path, K_lst)
+    np.save(vals_path, K_means_errs)
+    print('T = ' + format(T, '.2f') + ':', K_means_errs)
+    
