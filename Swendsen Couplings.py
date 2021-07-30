@@ -5,12 +5,20 @@ import os
 import matplotlib.pyplot as plt
 import time
 
+# ind_lst is a list of indices of the lattice sites. It is useful for vectorisation of calculations
+ind_lst = (np.stack(np.indices((n, n)), axis = -1)).reshape((n * n,2))
+# np.apply_along_axis(fun, 1, ind_lst)
+
 class Coupling:
-    def __init__(self, sites, order, all_sites_operator, bound_cond = False):
+    def __init__(self, name, sites, order, all_sites_operator, bound_cond = False):
+        self.name = name
         self.sites = sites
         self.order = order
         self.bound_cond = bound_cond
         self.all_sites_operator = all_sites_operator
+
+    def __str__(self):
+        return self.name
 
     # S is the specific spin-indpendent coupling at site l
     # The type of coupling it calculates depends on the argument coup_lst
@@ -63,8 +71,7 @@ def nn_all_sites(spins):
     for la in range(m - 1):
         val += spins[la, n - 1] * spins[la + 1, n - 1]
     return val
-
-coup_nn = Coupling(sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2, all_sites_operator = nn_all_sites)
+coup_nn = Coupling(name = 'nn', sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2, all_sites_operator = nn_all_sites)
 
 
 # nearest neighbour coupling for the boundary spins
@@ -77,7 +84,7 @@ def nn_bound_all_sites(spins):
     for lb in range(n):
         val += spins[0, lb] * spins[m - 1, lb]
     return val
-coup_nn_bound = Coupling(sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2, bound_cond = True, all_sites_operator = nn_bound_all_sites)
+coup_nn_bound = Coupling(name = 'nn_bound', sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2, bound_cond = True, all_sites_operator = nn_bound_all_sites)
 
 # next nearest neighbour coupling
 
@@ -91,8 +98,7 @@ def next_nn_all_sites(spins):
         for lb in range(n - 1):
             val += spins[la, lb] * spins[la - 1, lb + 1]
     return val
-
-coup_next_nn = Coupling(sites = ((-1, -1), (-1, 1), (1, -1), (1, 1)), order = 2, all_sites_operator = next_nn_all_sites)
+coup_next_nn = Coupling(name = 'next_nn', sites = ((-1, -1), (-1, 1), (1, -1), (1, 1)), order = 2, all_sites_operator = next_nn_all_sites)
 
 # coupling between spins that are 2 sites apart (K4 in CHung & Kao)
 def coup_2_all_sites(spins):
@@ -109,9 +115,7 @@ def coup_2_all_sites(spins):
     for la in range(m - 2):
         val += spins[la, n - 1] * spins[la + 2, n - 1]
     return val
-
-coup_2 = Coupling(sites = ((-2, 0), (2, 0), (0, -2), (0, 2)), order = 2, all_sites_operator = coup_2_all_sites)
-
+coup_2 = Coupling(name = '2', sites = ((-2, 0), (2, 0), (0, -2), (0, 2)), order = 2, all_sites_operator = coup_2_all_sites)
 
 # Hamiltoians are defined as lists
 
@@ -173,7 +177,50 @@ def S_diff(coup_a, Ham, spins_lst): # S tilde - S correlation function
             cor_fun[la, lb] = val
             print(str(l) + ': ' + str(cor_fun[la, lb]))
     S_tilde = np.sum(cor_fun) / ma
-    S_lst = [coup_nn.all_sites_operator(spins) for spins in spins_lst]
+    S_lst = [coup_a.all_sites_operator(spins) for spins in spins_lst]
     S = np.mean(S_lst)
     return S_tilde - S
-S_diff(coup_nn, H, confgs)
+# S_diff(coup_nn, H, confgs)
+
+def Jac_and_diff(Ham, spins_lst):
+    start = time.time()
+    num_coup = len(Ham)
+    num_spins, m, n = spins_lst.shape
+    K = np.asarray([i[1] for i in Ham])
+    # print(K)
+    Coups = [i[0] for i in Ham]
+    Jac = np.zeros((num_coup, num_coup))
+    S_diff = np.zeros(num_coup)
+    def S_lst(spins, l):
+        return np.asarray([coup.S(spins, l) for coup in Coups])
+    def Hl(S_lst_arg):
+        return np.sum(K * S_lst_arg)
+    for a in range(num_coup):
+        coup_a = Coups[a]
+        ma = coup_a.order
+        def comp_cor(l):
+            S_tilde_loc = 0
+            S_par_lst_loc = np.zeros(num_coup)
+            for spins in spins_lst:
+                S_lst_res = S_lst(spins, l)
+                # print(S_lst_res)
+                H_l = Hl(S_lst_res)
+                S_a = S_lst_res[a]
+                S_tilde_loc += S_a * np.tanh(H_l) / num_spins
+                for b in range(num_coup):
+                    # coup_b = Coups[b]
+                    S_b = S_lst_res[b]
+                    S_par_lst_loc[b] += S_a * S_b / (np.cosh(H_l) ** 2 * num_spins)
+            print(str(coup_a) + str(l) + ', time = ' + format(time.time() - start, '.2f'))
+            return S_tilde_loc, S_par_lst_loc
+        S_tilde_l, S_par_lst_l = np.apply_along_axis(comp_cor, 1, ind_lst).T
+        S_tilde = np.sum(S_tilde_l) / ma
+        S_par_lst = np.sum(S_par_lst_l, axis = 0) / ma
+        S_real_lst = [coup_a.all_sites_operator(spins) for spins in spins_lst]
+        S = np.mean(S_real_lst)
+        S_diff[a] = S_tilde - S
+        Jac[a, :] = S_par_lst
+    return Jac, S_diff
+Jac_and_diff(H, confgs)
+
+def Newton_Raphdson(T, nH, )
