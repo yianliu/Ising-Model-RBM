@@ -56,9 +56,22 @@ class Coupling:
                     val += spins[la_new, lb_new]
         return val
 
+    def check(self, spins):
+        (m, n) = spins.shape
+        coup_from_ind = 0
+        for la in range(m):
+            for lb in range(n):
+                l = [la, lb]
+                coup_from_ind += spins[la, lb] * self.S(spins, l)
+        coup_from_ind = coup_from_ind / self.order
+        coup_from_all = self.all_sites_operator(spins)
+        print('Computed from Single-Spin Operator:', coup_from_ind)
+        print('Computed from All-Spin Operator:', coup_from_all)
+
+
 
 # nearest neighbour coupling
-def nn_all_sites(spins):
+def K_1_all_sites(spins):
     m, n = spins.shape
     val = 0
     for la in range(m - 1):
@@ -72,12 +85,12 @@ def nn_all_sites(spins):
     for la in range(m - 1):
         val += spins[la, n - 1] * spins[la + 1, n - 1]
     return val
-coup_nn = Coupling(name = 'nn', sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2, all_sites_operator = nn_all_sites)
+K_1 = Coupling(name = 'Nearest Neighbour', sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2, all_sites_operator = K_1_all_sites)
 
 
 # nearest neighbour coupling for the boundary spins
 
-def nn_bound_all_sites(spins):
+def K_1_bound_all_sites(spins):
     m, n = spins.shape
     val = 0
     for la in range(m):
@@ -85,11 +98,11 @@ def nn_bound_all_sites(spins):
     for lb in range(n):
         val += spins[0, lb] * spins[m - 1, lb]
     return val
-coup_nn_bound = Coupling(name = 'nn_bound', sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2, bound_cond = True, all_sites_operator = nn_bound_all_sites)
+K_1_bound = Coupling(name = 'Nearest Neighbour Boundary', sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2, bound_cond = True, all_sites_operator = K_1_bound_all_sites)
 
 # next nearest neighbour coupling
 
-def next_nn_all_sites(spins):
+def K_2_all_sites(spins):
     m, n = spins.shape
     val = 0
     for la in range(m - 1):
@@ -99,10 +112,10 @@ def next_nn_all_sites(spins):
         for lb in range(n - 1):
             val += spins[la, lb] * spins[la - 1, lb + 1]
     return val
-coup_next_nn = Coupling(name = 'next_nn', sites = ((-1, -1), (-1, 1), (1, -1), (1, 1)), order = 2, all_sites_operator = next_nn_all_sites)
+K_2 = Coupling(name = 'Next Nearest Neighbour', sites = ((-1, -1), (-1, 1), (1, -1), (1, 1)), order = 2, all_sites_operator = K_2_all_sites)
 
 # coupling between spins that are 2 sites apart (K4 in CHung & Kao)
-def coup_2_all_sites(spins):
+def K_4_all_sites(spins):
     m, n = spins.shape
     val = 0
     for la in range(m - 2):
@@ -112,11 +125,13 @@ def coup_2_all_sites(spins):
                 lb_new = lb + j
                 val += spins[la, lb] * spins[la_new, lb_new]
     for lb in range(n - 2):
+        val += spins[m - 2, lb] * spins[m - 2, lb + 2]
         val += spins[m - 1, lb] * spins[m - 1, lb + 2]
     for la in range(m - 2):
+        val += spins[la, n - 2] * spins[la + 2, n - 2]
         val += spins[la, n - 1] * spins[la + 2, n - 1]
     return val
-coup_2 = Coupling(name = '2', sites = ((-2, 0), (2, 0), (0, -2), (0, 2)), order = 2, all_sites_operator = coup_2_all_sites)
+K_4 = Coupling(name = 'K4', sites = ((-2, 0), (2, 0), (0, -2), (0, 2)), order = 2, all_sites_operator = K_4_all_sites)
 
 # Hamiltoians are defined as lists
 
@@ -146,8 +161,8 @@ def partial_der(coup_a, coup_b, Ham, spins_lst):
     return np.sum(cor_fun) / ma
 
 # confgs = np.load(os.path.join('Data', 'Training Data', 'T = 2.50.npy'))
-# H = [[coup_nn, 0.4], [coup_nn_bound, 0.1], [coup_next_nn, 0.1]]
-# partial_der(coup_nn, coup_next_nn, H, confgs)
+# H = [[K_1, 0.4], [K_1_bound, 0.1], [K_2, 0.1]]
+# partial_der(K_1, K_2, H, confgs)
 
 def Jacobian(Ham, spins_lst):
     num_coup = len(Ham)
@@ -181,7 +196,7 @@ def S_diff(coup_a, Ham, spins_lst): # S tilde - S correlation function
     S_lst = [coup_a.all_sites_operator(spins) for spins in spins_lst]
     S = np.mean(S_lst)
     return S_tilde - S
-# S_diff(coup_nn, H, confgs)
+# S_diff(K_1, H, confgs)
 
 def Jac_and_diff(Ham, spins_lst):
     # start = time.time()
@@ -280,7 +295,7 @@ def Newton_Raphdson_MCMC(T, bs_n, Ham, num_itr):
     K_means_errs = np.stack((np.apply_along_axis(np.mean, 0, K_lst[-1]), np.apply_along_axis(error, 0, K_lst[-1])))
     return K_means_errs, K_lst
 
-# H_1 = [[coup_nn, 0.4], [coup_nn_bound, 0.1], [coup_next_nn, 0.1]]
+# H_1 = [[K_1, 0.4], [K_1_bound, 0.1], [K_2, 0.1]]
 # nH = 64
 # nH_name = 'nH = ' + str(nH)
 # coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, 'H_1')
@@ -302,7 +317,7 @@ def Newton_Raphdson_MCMC(T, bs_n, Ham, num_itr):
 #     for i, [val, err] in enumerate(K_means_errs.T):
 #         print('K' + str(i + 1) + ' = ' + format(val, '.5f'), u"\u00B1", format(err, '.5f'))
 
-H_2 = [[coup_nn, 0.4], [coup_next_nn, 0], [coup_2, 0]]
+H_2 = [[K_1, 0.4], [K_2, 0.1], [K_4, 0.1]]
 nH = 64
 nH_name = 'nH = ' + str(nH)
 coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, 'H_2')
@@ -315,4 +330,3 @@ for T in T_range:
     np.save(lst_path, K_lst)
     np.save(vals_path, K_means_errs)
     print('T = ' + format(T, '.2f') + ':', K_means_errs)
-    
