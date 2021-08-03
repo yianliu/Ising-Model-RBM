@@ -24,6 +24,12 @@ class Coupling:
     # S is the specific spin-indpendent coupling at site l
     # The type of coupling it calculates depends on the argument coup_lst
     def S(self, spins, l):
+        if self.order == 2:
+            return self.S_two_spins(spins, l)
+        else:
+            return self.S_higher_order(spins, l)
+
+    def S_two_spins(self, spins, l):
         val = 0
         la, lb = l
         (m, n) = spins.shape
@@ -56,10 +62,31 @@ class Coupling:
                     val += spins[la_new, lb_new]
         return val
 
-    def check(self, spins):
+    def S_higher_order(self, spins, l):
+        val = 0
+        la, lb = l
         (m, n) = spins.shape
+        if self.bound_cond == False:
+            for locs in self.sites:
+                val_loc = 1
+                for i, j in locs:
+                    la_new = la + i
+                    lb_new = lb + j
+                    if la_new in range(m) and lb_new in range(n):
+                        val_loc = val_loc * spins[la_new, lb_new]
+                    else:
+                        val_loc = 0
+                        break
+                val += val_loc
+            return val
+        else:
+            print('Higher order couplings with periodic boundary conditions not supported')
+
+    def check(self, n):
+        spins = np.random.randint(2, size=(n, n))
+        print(spins)
         coup_from_ind = 0
-        for la in range(m):
+        for la in range(n):
             for lb in range(n):
                 l = [la, lb]
                 coup_from_ind += spins[la, lb] * self.S(spins, l)
@@ -67,8 +94,6 @@ class Coupling:
         coup_from_all = self.all_sites_operator(spins)
         print('Computed from Single-Spin Operator:', coup_from_ind)
         print('Computed from All-Spin Operator:', coup_from_all)
-
-
 
 # nearest neighbour coupling
 def K_1_all_sites(spins):
@@ -85,7 +110,8 @@ def K_1_all_sites(spins):
     for la in range(m - 1):
         val += spins[la, n - 1] * spins[la + 1, n - 1]
     return val
-K_1 = Coupling(name = 'Nearest Neighbour', sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2, all_sites_operator = K_1_all_sites)
+K_1_site_locs = ((-1, 0), (1, 0), (0, -1), (0, 1))
+K_1 = Coupling(name = 'Nearest Neighbour', sites = K_1_site_locs, order = 2, all_sites_operator = K_1_all_sites)
 
 
 # nearest neighbour coupling for the boundary spins
@@ -98,7 +124,7 @@ def K_1_bound_all_sites(spins):
     for lb in range(n):
         val += spins[0, lb] * spins[m - 1, lb]
     return val
-K_1_bound = Coupling(name = 'Nearest Neighbour Boundary', sites = ((-1, 0), (1, 0), (0, -1), (0, 1)), order = 2, bound_cond = True, all_sites_operator = K_1_bound_all_sites)
+K_1_bound = Coupling(name = 'Nearest Neighbour Boundary', sites = K_1_site_locs, order = 2, bound_cond = True, all_sites_operator = K_1_bound_all_sites)
 
 # next nearest neighbour coupling
 
@@ -112,7 +138,8 @@ def K_2_all_sites(spins):
         for lb in range(n - 1):
             val += spins[la, lb] * spins[la - 1, lb + 1]
     return val
-K_2 = Coupling(name = 'Next Nearest Neighbour', sites = ((-1, -1), (-1, 1), (1, -1), (1, 1)), order = 2, all_sites_operator = K_2_all_sites)
+K_2_site_locs = ((-1, -1), (-1, 1), (1, -1), (1, 1))
+K_2 = Coupling(name = 'Next Nearest Neighbour', sites = K_2_site_locs, order = 2, all_sites_operator = K_2_all_sites)
 
 # coupling between spins that are 2 sites apart (K4 in CHung & Kao)
 def K_4_all_sites(spins):
@@ -131,10 +158,27 @@ def K_4_all_sites(spins):
         val += spins[la, n - 2] * spins[la + 2, n - 2]
         val += spins[la, n - 1] * spins[la + 2, n - 1]
     return val
-K_4 = Coupling(name = 'K4', sites = ((-2, 0), (2, 0), (0, -2), (0, 2)), order = 2, all_sites_operator = K_4_all_sites)
+K_4_site_locs = ((-2, 0), (2, 0), (0, -2), (0, 2))
+K_4 = Coupling(name = 'K4', sites = K_4_site_locs, order = 2, all_sites_operator = K_4_all_sites)
 
+# 3-spin coupling (second coupling in (b) in Chung 7 Kao)
+def K_12_all_sites(spins):
+    m, n = spins.shape
+    val = 0
+    for la in range(m - 1):
+        for lb in range(n - 1):
+            val += spins[la, lb] * spins[la + 1, lb] * spins[la, lb + 1]
+            val += spins[la, lb] * spins[la + 1, lb + 1] * spins[la, lb + 1]
+            val += spins[la, lb] * spins[la + 1, lb] * spins[la + 1, lb + 1]
+            val += spins[la + 1, lb + 1] * spins[la + 1, lb] * spins[la, lb + 1]
+    return val
+K_12_site_locs = (((0, 1), (1, 0)), ((0, 1), (1, 1)), ((1, 0), (1, 1)),
+((0, 1), (-1, 0)), ((0, 1), (-1, 1)), ((-1, 0), (-1, 1)),
+((0, -1), (1, 0)), ((0, -1), (1, -1)), ((1, 0), (1, -1)),
+((0, -1), (-1, 0)), ((0, -1), (-1, -1)), ((-1, 0), (-1, -1))
+)
+K_12 = Coupling(name = 'K12', sites = K_12_site_locs, order = 3, all_sites_operator = K_12_all_sites)
 # Hamiltoians are defined as lists
-
 def cor_fun_ind(coup_a, coup_b, Ham, spins, l):
     Hl = 0
     for coup, K in Ham:
@@ -295,38 +339,51 @@ def Newton_Raphdson_MCMC(T, bs_n, Ham, num_itr):
     K_means_errs = np.stack((np.apply_along_axis(np.mean, 0, K_lst[-1]), np.apply_along_axis(error, 0, K_lst[-1])))
     return K_means_errs, K_lst
 
-# H_1 = [[K_1, 0.4], [K_1_bound, 0.1], [K_2, 0.1]]
-# nH = 64
-# nH_name = 'nH = ' + str(nH)
-# coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, 'H_1')
-#
-# for T in T_range:
-#     file_name = 'T = ' + format(T, '.2f') + '.npy'
-#     lst_path = os.path.join(coup_path, 'K List', file_name)
-#     vals_path = os.path.join(coup_path, 'K Means and Errors', file_name)
-#     K_means_errs, K_lst = Newton_Raphdson(T, nH, bs_n = 10, Ham = H_1, num_itr = 4)
-#     np.save(lst_path, K_lst)
-#     np.save(vals_path, K_means_errs)
-#     print('T = ' + format(T, '.2f') + ':', K_means_errs)
-
-# for T in T_range:
-#     file_name = 'T = ' + format(T, '.2f') + '.npy'
-#     vals_path = os.path.join(coup_path, 'K Means and Errors', file_name)
-#     K_means_errs = np.load(vals_path)
-#     print('\nT = ' + format(T, '.2f'))
-#     for i, [val, err] in enumerate(K_means_errs.T):
-#         print('K' + str(i + 1) + ' = ' + format(val, '.5f'), u"\u00B1", format(err, '.5f'))
-
+H_1 = [[K_1, 0.4], [K_1_bound, 0.1], [K_2, 0.1]]
 H_2 = [[K_1, 0.4], [K_2, 0.1], [K_4, 0.1]]
-nH = 64
-nH_name = 'nH = ' + str(nH)
-coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, 'H_2')
+H_3 = [[K_1, 0.4], [K_2, 0], [K_12, 0]]
 
-for T in T_range:
-    file_name = 'T = ' + format(T, '.2f') + '.npy'
-    lst_path = os.path.join(coup_path, 'K List', file_name)
-    vals_path = os.path.join(coup_path, 'K Means and Errors', file_name)
-    K_means_errs, K_lst = Newton_Raphdson(T, nH, bs_n = 10, Ham = H_2, num_itr = 4)
-    np.save(lst_path, K_lst)
-    np.save(vals_path, K_means_errs)
-    print('T = ' + format(T, '.2f') + ':', K_means_errs)
+def Compute_and_Save(nH, Ham, Ham_name, num_itr, bs_n):
+    nH_name = 'nH = ' + str(nH)
+    coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, Ham_name)
+    lst_path = os.path.join(coup_path, 'K List')
+    if not os.path.exists(lst_path):
+        os.makedirs(lst_path)
+    vals_path = os.path.join(coup_path, 'K Means and Errors')
+    if not os.path.exists(vals_path):
+        os.makedirs(vals_path)
+    for T in T_range:
+        file_name = 'T = ' + format(T, '.2f') + '.npy'
+        K_means_errs, K_lst = Newton_Raphdson(T, nH, bs_n, Ham, num_itr)
+        np.save(os.path.join(lst_path, file_name), K_lst)
+        np.save(os.path.join(vals_path, file_name), K_means_errs)
+        print('T = ' + format(T, '.2f') + ':', K_means_errs)
+
+def Print_Final_Coups(nH, Ham_name):
+    nH_name = 'nH = ' + str(nH)
+    coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, Ham_name, 'K Means and Errors')
+    for T in T_range:
+        file_name = 'T = ' + format(T, '.2f') + '.npy'
+        K_means_errs = np.load(os.path.join(coup_path, file_name))
+        print('\nT = ' + format(T, '.2f'))
+        for i, [val, err] in enumerate(K_means_errs.T):
+            print('K' + str(i + 1) + ' = ' + format(val, '.5f'), u"\u00B1", format(err, '.5f'))
+
+
+def Compute_and_Save_last_T(nH, Ham, Ham_name, num_itr, bs_n):
+    nH_name = 'nH = ' + str(nH)
+    coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, Ham_name)
+    lst_path = os.path.join(coup_path, 'K List')
+    if not os.path.exists(lst_path):
+        os.makedirs(lst_path)
+    vals_path = os.path.join(coup_path, 'K Means and Errors')
+    if not os.path.exists(vals_path):
+        os.makedirs(vals_path)
+    for T in T_range[5:]:
+        file_name = 'T = ' + format(T, '.2f') + '.npy'
+        K_means_errs, K_lst = Newton_Raphdson(T, nH, bs_n, Ham, num_itr)
+        np.save(os.path.join(lst_path, file_name), K_lst)
+        np.save(os.path.join(vals_path, file_name), K_means_errs)
+        print('T = ' + format(T, '.2f') + ':', K_means_errs)
+# Print_Final_Coups(4, 'H_3')
+Compute_and_Save_last_T(nH = 4, Ham = H_3, Ham_name = 'H_3', num_itr = 4, bs_n = 10)
