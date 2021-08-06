@@ -288,21 +288,22 @@ def error(lst):
 
 def Newton_Raphdson(T, nH, bs_n, Ham, num_itr):
     start = time.time()
+    Ham_new = Ham.copy()
     file_name = 'T = ' + format(T, '.2f') + '.npy'
     nH_name = 'nH = ' + str(nH)
     data_path = os.path.join('Data', 'RBM Generated Data', nH_name, file_name)
     samples = np.load(data_path)
     np.random.shuffle(samples)
     data_bs_sets = np.split(samples, bs_n)
-    K = np.tile(np.asarray([i[1] for i in Ham]), (bs_n, 1))
+    K = np.tile(np.asarray([i[1] for i in Ham_new]), (bs_n, 1))
     K_lst = []
     for itr in range(num_itr):
         print('Iteration', itr + 1)
         for bs_ind, dataset in enumerate(data_bs_sets):
             K_loc = K[bs_ind, :]
-            for i in range(len(Ham)):
-                Ham[i][1] = K_loc[i]
-            Jac, S_diff = Jac_and_diff(Ham, dataset)
+            for i in range(len(Ham_new)):
+                Ham_new[i][1] = K_loc[i]
+            Jac, S_diff = Jac_and_diff(Ham_new, dataset)
             h = np.linalg.solve(Jac, - S_diff)
             K_loc += h
             K[bs_ind, :] = K_loc
@@ -315,20 +316,21 @@ def Newton_Raphdson(T, nH, bs_n, Ham, num_itr):
 
 def Newton_Raphdson_MCMC(T, bs_n, Ham, num_itr):
     start = time.time()
+    Ham_new = Ham.copy()
     file_name = 'T = ' + format(T, '.2f') + '.npy'
     data_path = os.path.join('Data', 'Training Data', file_name)
     samples = np.load(data_path)
     np.random.shuffle(samples)
     data_bs_sets = np.split(samples, bs_n)
-    K = np.tile(np.asarray([i[1] for i in Ham]), (bs_n, 1))
+    K = np.tile(np.asarray([i[1] for i in Ham_new]), (bs_n, 1))
     K_lst = []
     for itr in range(num_itr):
         print('Iteration', itr + 1)
         for bs_ind, dataset in enumerate(data_bs_sets):
             K_loc = K[bs_ind, :]
-            for i in range(len(Ham)):
-                Ham[i][1] = K_loc[i]
-            Jac, S_diff = Jac_and_diff(Ham, dataset)
+            for i in range(len(Ham_new)):
+                Ham_new[i][1] = K_loc[i]
+            Jac, S_diff = Jac_and_diff(Ham_new, dataset)
             h = np.linalg.solve(Jac, - S_diff)
             K_loc += h
             K[bs_ind, :] = K_loc
@@ -352,7 +354,7 @@ def Compute_and_Save(nH, Ham, Ham_name, num_itr, bs_n):
     vals_path = os.path.join(coup_path, 'K Means and Errors')
     if not os.path.exists(vals_path):
         os.makedirs(vals_path)
-    for T in T_range:
+    for T in T_range[4:]:
         file_name = 'T = ' + format(T, '.2f') + '.npy'
         K_means_errs, K_lst = Newton_Raphdson(T, nH, bs_n, Ham, num_itr)
         np.save(os.path.join(lst_path, file_name), K_lst)
@@ -371,4 +373,5 @@ def Print_Final_Coups(nH, Ham_name):
 
 if __name__ == "__main__":
     print('main')
-    # Compute_and_Save(nH = 4, Ham = H_3, Ham_name = 'H_3', num_itr = 4, bs_n = 10)
+    Compute_and_Save(nH = 4, Ham = H_3, Ham_name = 'H_3', num_itr = 4, bs_n = 10)
+Print_Final_Coups(4, 'H_3')
