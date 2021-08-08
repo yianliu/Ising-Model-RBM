@@ -20,6 +20,7 @@ mcsteps = 200
 # configurations in each mini batch) for RBM training and sampling
 me = 1500
 num_snapshots = 15
+interval_epochs = int(me / num_snapshots)
 snapshot_list = [0, 1, 2, 4, 9, 14]
 # lr = 0.01
 # lr_list contains a list of lr values to be tried on the RBMs

@@ -28,7 +28,6 @@ for nH in nH_list:
     for T in T_range:
         H_arr = np.zeros((num_snapshots, 64, 64))
         file_name = 'T = ' + format(T, '.2f') + '.npy'
-        interval_epochs = int(me / num_snapshots)
         for snapshot in range(num_snapshots):
             epochs_snapshot = (snapshot + 1) * interval_epochs
             epoch_name = 'Epochs = ' + str(epochs_snapshot)
@@ -66,7 +65,6 @@ for nH in nH_list:
     for i, ax in enumerate(fig.axes):
         T = T_range[i]
         file_name = 'T = ' + format(T, '.2f') + '.npy'
-        interval_epochs = int(me / num_snapshots)
         H = np.load(os.path.join(save_couplings_path, file_name))[-1].flatten()
         ax.hist(H, bins = 50)
         ax.set_title('T = ' + format(T, '.2f'))
@@ -88,7 +86,6 @@ for nH in nH_list:
     for i, ax in enumerate(fig.axes):
         T = T_range[i]
         file_name = 'T = ' + format(T, '.2f') + '.npy'
-        interval_epochs = int(me / num_snapshots)
         H = np.load(os.path.join(save_couplings_path, file_name))[-1].flatten()
         try:
             bins = np.linspace(0.1, max(H), num = 50)

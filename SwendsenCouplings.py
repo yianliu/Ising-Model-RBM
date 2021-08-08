@@ -82,6 +82,19 @@ class Coupling:
         else:
             print('Higher order couplings with periodic boundary conditions not supported')
 
+    def returnNeighbours(self, l):
+        la, lb = l
+        if self.bound_cond == False:
+            neighbours = []
+            for i, j in self.sites:
+                la_new = la + i
+                lb_new = lb + j
+                if la_new in range(n) and lb_new in range(n):
+                    neighbours.append([la_new, lb_new])
+            return neighbours
+        else:
+            print('Neighbour finding with periodic boundary conditions not supported')
+
     def check(self, n):
         spins = np.random.randint(2, size=(n, n))
         print(spins)
@@ -111,7 +124,7 @@ def K_1_all_sites(spins):
         val += spins[la, n - 1] * spins[la + 1, n - 1]
     return val
 K_1_site_locs = ((-1, 0), (1, 0), (0, -1), (0, 1))
-K_1 = Coupling(name = 'Nearest Neighbour', sites = K_1_site_locs, order = 2, all_sites_operator = K_1_all_sites)
+K_1 = Coupling(name = 'K1', sites = K_1_site_locs, order = 2, all_sites_operator = K_1_all_sites)
 
 
 # nearest neighbour coupling for the boundary spins
@@ -124,7 +137,7 @@ def K_1_bound_all_sites(spins):
     for lb in range(n):
         val += spins[0, lb] * spins[m - 1, lb]
     return val
-K_1_bound = Coupling(name = 'Nearest Neighbour Boundary', sites = K_1_site_locs, order = 2, bound_cond = True, all_sites_operator = K_1_bound_all_sites)
+K_1_bound = Coupling(name = 'K1 Boundary', sites = K_1_site_locs, order = 2, bound_cond = True, all_sites_operator = K_1_bound_all_sites)
 
 # next nearest neighbour coupling
 
@@ -139,7 +152,7 @@ def K_2_all_sites(spins):
             val += spins[la, lb] * spins[la - 1, lb + 1]
     return val
 K_2_site_locs = ((-1, -1), (-1, 1), (1, -1), (1, 1))
-K_2 = Coupling(name = 'Next Nearest Neighbour', sites = K_2_site_locs, order = 2, all_sites_operator = K_2_all_sites)
+K_2 = Coupling(name = 'K2', sites = K_2_site_locs, order = 2, all_sites_operator = K_2_all_sites)
 
 # coupling between spins that are 2 sites apart (K4 in CHung & Kao)
 def K_4_all_sites(spins):
@@ -354,7 +367,7 @@ def Compute_and_Save(nH, Ham, Ham_name, num_itr, bs_n):
     vals_path = os.path.join(coup_path, 'K Means and Errors')
     if not os.path.exists(vals_path):
         os.makedirs(vals_path)
-    for T in T_range[4:]:
+    for T in T_range:
         file_name = 'T = ' + format(T, '.2f') + '.npy'
         K_means_errs, K_lst = Newton_Raphdson(T, nH, bs_n, Ham, num_itr)
         np.save(os.path.join(lst_path, file_name), K_lst)
@@ -371,7 +384,111 @@ def Print_Final_Coups(nH, Ham_name):
         for i, [val, err] in enumerate(K_means_errs.T):
             print('K' + str(i + 1) + ' = ' + format(val, '.5f'), u"\u00B1", format(err, '.5f'))
 
-if __name__ == "__main__":
-    print('main')
-    Compute_and_Save(nH = 4, Ham = H_3, Ham_name = 'H_3', num_itr = 4, bs_n = 10)
-Print_Final_Coups(4, 'H_3')
+def DimensionTransform_2to1(site):
+    row, col = site
+    site1D = row * n + col
+    return site1D
+
+def ConstructHMatrix(Ham):
+    HMatrix = np.zeros((n**2, n**2))
+    for coup, K in Ham:
+        if coup.order == 2:
+            for ind in ind_lst:
+                neighbours = coup.returnNeighbours(ind)
+                for neighbour in neighbours:
+                    ind1D = DimensionTransform_2to1(ind)
+                    neighbor1D = DimensionTransform_2to1(neighbour)
+                    HMatrix[ind1D, neighbor1D] = K
+        else:
+            print('Only two-spin couplings supported')
+    return HMatrix
+
+# if __name__ == "__main__":
+#     print('main')
+#     Compute_and_Save(nH = 4, Ham = H_2, Ham_name = 'H_2', num_itr = 4, bs_n = 10)
+# Print_Final_Coups(4, 'H_2')
+# plt.matshow(ConstructHMatrix(H_2))
+# Print_Final_Coups(4, 'H_2')
+
+
+def Newton_Raphdson_at_Epoch(T, nH, bs_n, Ham, num_itr, snapshot, sample_size):
+    start = time.time()
+    epochs_snapshot = (snapshot + 1) * interval_epochs
+    epochName = 'Epochs = ' + str(epochs_snapshot)
+    Ham_new = Ham.copy()
+    file_name = 'T = ' + format(T, '.2f') + '.npy'
+    nH_name = 'nH = ' + str(nH)
+    data_path = os.path.join('Data', 'RBM Generated Data', nH_name, epochName, file_name)
+    samples = np.load(data_path)
+    np.random.shuffle(samples)
+    data_bs_sets = np.split(samples[:sample_size], bs_n)
+    K = np.tile(np.asarray([i[1] for i in Ham_new]), (bs_n, 1))
+    K_lst = []
+    for itr in range(num_itr):
+        print('Iteration', itr + 1)
+        for bs_ind, dataset in enumerate(data_bs_sets):
+            K_loc = K[bs_ind, :]
+            for i in range(len(Ham_new)):
+                Ham_new[i][1] = K_loc[i]
+            Jac, S_diff = Jac_and_diff(Ham_new, dataset)
+            h = np.linalg.solve(Jac, - S_diff)
+            K_loc += h
+            K[bs_ind, :] = K_loc
+            print('Dataset', bs_ind + 1, 'finished' + ', time = ' + format(time.time() - start, '.2f'))
+            print('Couplings:', K_loc)
+        K_lst.append(copy.deepcopy(K))
+        # print('Iteration', itr + 1, K)
+    K_means_errs = np.stack((np.apply_along_axis(np.mean, 0, K_lst[-1]), np.apply_along_axis(error, 0, K_lst[-1])))
+    return K_means_errs, K_lst
+
+def Compute_and_Save_at_Epoch(nH, Ham, Ham_name, num_itr, bs_n, snapshot, sample_size):
+    epochs_snapshot = (snapshot + 1) * interval_epochs
+    epochName = 'Epochs = ' + str(epochs_snapshot)
+    print(epochName)
+    nH_name = 'nH = ' + str(nH)
+    coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, Ham_name, epochName)
+    lst_path = os.path.join(coup_path, 'K List')
+    if not os.path.exists(lst_path):
+        os.makedirs(lst_path)
+    vals_path = os.path.join(coup_path, 'K Means and Errors')
+    if not os.path.exists(vals_path):
+        os.makedirs(vals_path)
+    for T in T_range:
+        file_name = 'T = ' + format(T, '.2f') + '.npy'
+        K_means_errs, K_lst = Newton_Raphdson_at_Epoch(T, nH, bs_n, Ham, num_itr, snapshot, sample_size)
+        np.save(os.path.join(lst_path, file_name), K_lst)
+        np.save(os.path.join(vals_path, file_name), K_means_errs)
+        print('T = ' + format(T, '.2f') + ':', K_means_errs)
+
+def Plot_Matrix(nH, Ham, Ham_name):
+    nH_name = 'nH = ' + str(nH)
+    save_plot_path = os.path.join('Plots', 'Couplings', 'Swendsen')
+    coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, Ham_name, 'K Means and Errors')
+    fig, axes = plt.subplots(nrows = 2, ncols = 4, figsize=(10,7))
+    Coup_names = ''
+    for coup, K in Ham:
+        Coup_names = Coup_names + coup.name + ', '
+    for i, ax in enumerate(fig.axes):
+        T = T_range[i]
+        T_name = 'T = ' + format(T, '.2f')
+        file_name = T_name + '.npy'
+        K_means = np.load(os.path.join(coup_path, file_name))[0, :]
+        Ham_new = Ham.copy()
+        for i in range(len(Ham_new)):
+            Ham_new[i][1] = K_means[i]
+        HMatrix = ConstructHMatrix(Ham_new)
+        im = ax.matshow(HMatrix, label = T_name, cmap = 'inferno')
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_title(T_name)
+    fig.suptitle('Swendsen Couplings for ' + nH_name + '\n Couplings: ' + Coup_names[:-2], size = 18, y = 0.95)
+    plt.tight_layout(pad = 3)
+    fig.colorbar(im, ax = axes)
+    figname = os.path.join(save_plot_path, nH_name + ', ' + Ham_name + '.jpg')
+    if os.path.isfile(figname):
+       os.remove(figname)
+    fig.savefig(figname, dpi = 1200)
+Plot_Matrix(64, H_2, 'H_2')
+
+def Plot_Over_Epochs(nH, Ham):
+    
