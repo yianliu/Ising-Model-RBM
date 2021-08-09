@@ -5,6 +5,7 @@ import copy
 import os
 import matplotlib.pyplot as plt
 import time
+import winsound
 
 # ind_lst is a list of indices of the lattice sites. It is useful for vectorisation of calculations
 ind_lst = (np.stack(np.indices((n, n)), axis = -1)).reshape((n * n,2))
@@ -137,7 +138,7 @@ def K_1_bound_all_sites(spins):
     for lb in range(n):
         val += spins[0, lb] * spins[m - 1, lb]
     return val
-K_1_bound = Coupling(name = 'K1 Boundary', sites = K_1_site_locs, order = 2, bound_cond = True, all_sites_operator = K_1_bound_all_sites)
+K_1_bound = Coupling(name = 'K1$_{boundary}$', sites = K_1_site_locs, order = 2, bound_cond = True, all_sites_operator = K_1_bound_all_sites)
 
 # next nearest neighbour coupling
 
@@ -375,7 +376,7 @@ def Compute_and_Save(nH, Ham, Ham_name, num_itr, bs_n):
         np.save(os.path.join(vals_path, file_name), K_means_errs)
         print('T = ' + format(T, '.2f') + ':', K_means_errs)
 
-def Print_Final_Coups(nH, Ham_name):
+def Print_Final_Coups(nH, Ham, Ham_name):
     nH_name = 'nH = ' + str(nH)
     coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, Ham_name, 'K Means and Errors')
     for T in T_range:
@@ -383,7 +384,8 @@ def Print_Final_Coups(nH, Ham_name):
         K_means_errs = np.load(os.path.join(coup_path, file_name))
         print('\nT = ' + format(T, '.2f'))
         for i, [val, err] in enumerate(K_means_errs.T):
-            print('K' + str(i + 1) + ' = ' + format(val, '.5f'), u"\u00B1", format(err, '.5f'))
+            coup = Ham[i][0]
+            print(coup.name + ' = ' + format(val, '.5f'), u"\u00B1", format(err, '.5f'))
 
 def DimensionTransform_2to1(site):
     row, col = site
@@ -508,7 +510,7 @@ def Plot_Ham(Ham, Ham_name):
             ax.plot(T_range, np.zeros(nt), marker = '.', ls = '-', lw = 1.4, c = 'gray', label = 'Ising')
         ax.set_xlabel('Temperature', fontdict = myfont_s)
         ax.set_ylabel(coup + ' * T')
-        for nH_ind, nH in enumerate([4, 64]):
+        for nH_ind, nH in enumerate([64]):
             coup_vals = np.zeros(nt)
             coup_errs = np.zeros(nt)
             nH_name = 'nH = ' + str(nH)
@@ -528,7 +530,6 @@ def Plot_Ham(Ham, Ham_name):
     if os.path.isfile(plot_path):
        os.remove(plot_path)
     fig.savefig(plot_path,  bbox_inches = 'tight', dpi = 1200)
-Plot_Ham(H_4, 'H_4')
 
 def Plot_over_Epochs(nH, Ham, Ham_name, T_ind_lst):
     nH_name = 'nH = ' + str(nH)
@@ -565,3 +566,7 @@ def Plot_over_Epochs(nH, Ham, Ham_name, T_ind_lst):
     if os.path.isfile(plot_path):
        os.remove(plot_path)
     fig.savefig(plot_path,  bbox_inches = 'tight', dpi = 1200)
+
+Compute_and_Save(nH = 4, Ham = H_1, Ham_name = 'H_1', num_itr = 4, bs_n = 10)
+Compute_and_Save(nH = 16, Ham = H_1, Ham_name = 'H_1', num_itr = 4, bs_n = 10)
+winsound.Beep(440,1000)
