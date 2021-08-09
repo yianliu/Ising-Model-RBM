@@ -155,7 +155,7 @@ K_2_site_locs = ((-1, -1), (-1, 1), (1, -1), (1, 1))
 K_2 = Coupling(name = 'K2', sites = K_2_site_locs, order = 2, all_sites_operator = K_2_all_sites)
 
 # coupling between spins that are 2 sites apart (K4 in CHung & Kao)
-def K_4_all_sites(spins):
+def K_3_all_sites(spins):
     m, n = spins.shape
     val = 0
     for la in range(m - 2):
@@ -171,11 +171,11 @@ def K_4_all_sites(spins):
         val += spins[la, n - 2] * spins[la + 2, n - 2]
         val += spins[la, n - 1] * spins[la + 2, n - 1]
     return val
-K_4_site_locs = ((-2, 0), (2, 0), (0, -2), (0, 2))
-K_4 = Coupling(name = 'K4', sites = K_4_site_locs, order = 2, all_sites_operator = K_4_all_sites)
+K_3_site_locs = ((-2, 0), (2, 0), (0, -2), (0, 2))
+K_3 = Coupling(name = 'K3', sites = K_3_site_locs, order = 2, all_sites_operator = K_3_all_sites)
 
 # 3-spin coupling (second coupling in (b) in Chung 7 Kao)
-def K_12_all_sites(spins):
+def K_4_all_sites(spins):
     m, n = spins.shape
     val = 0
     for la in range(m - 1):
@@ -185,12 +185,12 @@ def K_12_all_sites(spins):
             val += spins[la, lb] * spins[la + 1, lb] * spins[la + 1, lb + 1]
             val += spins[la + 1, lb + 1] * spins[la + 1, lb] * spins[la, lb + 1]
     return val
-K_12_site_locs = (((0, 1), (1, 0)), ((0, 1), (1, 1)), ((1, 0), (1, 1)),
+K_4_site_locs = (((0, 1), (1, 0)), ((0, 1), (1, 1)), ((1, 0), (1, 1)),
 ((0, 1), (-1, 0)), ((0, 1), (-1, 1)), ((-1, 0), (-1, 1)),
 ((0, -1), (1, 0)), ((0, -1), (1, -1)), ((1, 0), (1, -1)),
 ((0, -1), (-1, 0)), ((0, -1), (-1, -1)), ((-1, 0), (-1, -1))
 )
-K_12 = Coupling(name = 'K12', sites = K_12_site_locs, order = 3, all_sites_operator = K_12_all_sites)
+K_4 = Coupling(name = 'K4', sites = K_4_site_locs, order = 3, all_sites_operator = K_4_all_sites)
 # Hamiltoians are defined as lists
 def cor_fun_ind(coup_a, coup_b, Ham, spins, l):
     Hl = 0
@@ -355,8 +355,9 @@ def Newton_Raphdson_MCMC(T, bs_n, Ham, num_itr):
     return K_means_errs, K_lst
 
 H_1 = [[K_1, 0.4], [K_1_bound, 0.1], [K_2, 0.1]]
-H_2 = [[K_1, 0.4], [K_2, 0.1], [K_4, 0.1]]
-H_3 = [[K_1, 0.4], [K_2, 0], [K_12, 0]]
+H_2 = [[K_1, 0.4], [K_2, 0.1], [K_3, 0.1]]
+H_3 = [[K_1, 0.4], [K_2, 0], [K_4, 0]]
+H_4 = [[K_1, 0.4], [K_2, 0.1], [K_3, 0.1], [K_4, 0]]
 
 def Compute_and_Save(nH, Ham, Ham_name, num_itr, bs_n):
     nH_name = 'nH = ' + str(nH)
@@ -462,6 +463,7 @@ def Compute_and_Save_at_Epoch(nH, Ham, Ham_name, num_itr, bs_n, snapshot, sample
 
 def Plot_Matrix(nH, Ham, Ham_name):
     nH_name = 'nH = ' + str(nH)
+    n_name = 'n = ' + str(nH)
     save_plot_path = os.path.join('Plots', 'Couplings', 'Swendsen')
     coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, Ham_name, 'K Means and Errors')
     fig, axes = plt.subplots(nrows = 2, ncols = 4, figsize=(10,7))
@@ -481,14 +483,85 @@ def Plot_Matrix(nH, Ham, Ham_name):
         ax.set_xticks([])
         ax.set_yticks([])
         ax.set_title(T_name)
-    fig.suptitle('Swendsen Couplings for ' + nH_name + '\n Couplings: ' + Coup_names[:-2], size = 18, y = 0.95)
+    fig.suptitle('Swendsen Couplings for ' + n_name + '\n Couplings: ' + Coup_names[:-2], size = 18, y = 0.95)
     plt.tight_layout(pad = 3)
     fig.colorbar(im, ax = axes)
     figname = os.path.join(save_plot_path, nH_name + ', ' + Ham_name + '.jpg')
     if os.path.isfile(figname):
        os.remove(figname)
-    fig.savefig(figname, dpi = 1200)
-Plot_Matrix(64, H_2, 'H_2')
+#     fig.savefig(figname, dpi = 1200)
+# for nH in nH_list:
+#     Plot_Matrix(nH, H_2, 'H_2')
 
-def Plot_Over_Epochs(nH, Ham):
-    
+def Plot_Ham(Ham, Ham_name):
+    Coups = [i[0].name for i in Ham]
+    if len(Ham) == 4:
+        fig, axes = plt.subplots(nrows = 2, ncols = 2, figsize = (7, 6))
+    else:
+        fig, axes = plt.subplots(nrows = 1, ncols = 3, figsize = (9, 4))
+    fig.suptitle('Coupling Coefficients from the Swendsen Method', fontweight = 'bold')
+    for i, ax in enumerate(fig.axes):
+        coup = Coups[i]
+        if coup == 'K1':
+            ax.plot(T_range, np.ones(nt), marker = '.', ls = '-', lw = 1.4, c = 'gray', label = 'Ising')
+        else:
+            ax.plot(T_range, np.zeros(nt), marker = '.', ls = '-', lw = 1.4, c = 'gray', label = 'Ising')
+        ax.set_xlabel('Temperature', fontdict = myfont_s)
+        ax.set_ylabel(coup + ' * T')
+        for nH_ind, nH in enumerate([4, 64]):
+            coup_vals = np.zeros(nt)
+            coup_errs = np.zeros(nt)
+            nH_name = 'nH = ' + str(nH)
+            n_name = 'n = ' + str(nH)
+            coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, Ham_name, 'K Means and Errors')
+            for T_ind, T in enumerate(T_range):
+                file_name = 'T = ' + format(T, '.2f') + '.npy'
+                K_means_errs = np.load(os.path.join(coup_path, file_name))
+                coup_vals[T_ind] = K_means_errs[0, i]
+                coup_errs[T_ind] = K_means_errs[1, i]
+            # print(coup_errs)
+            ax.errorbar(T_range, coup_vals * T_range, yerr = coup_errs * T_range, marker = '.', ls = '-', lw = 1.4, capsize = 2, ecolor = 'C7', elinewidth = 1.5, label = n_name)
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels, loc ='right', bbox_to_anchor=(1.2, 0.5))
+    plt.tight_layout(pad = 1.5)
+    plot_path = os.path.join('Plots', 'Couplings', 'Swendsen', Ham_name + '.jpg')
+    if os.path.isfile(plot_path):
+       os.remove(plot_path)
+    fig.savefig(plot_path,  bbox_inches = 'tight', dpi = 1200)
+Plot_Ham(H_4, 'H_4')
+
+def Plot_over_Epochs(nH, Ham, Ham_name, T_ind_lst):
+    nH_name = 'nH = ' + str(nH)
+    n_name = 'n = ' + str(nH)
+    fig, axes = plt.subplots(nrows = 1, ncols = 3, figsize = (9, 4))
+    fig.suptitle('Changes in Coupling Coefficients over Training Epochs \n' + n_name, fontweight = 'bold')
+    Coups = [i[0].name for i in Ham]
+    coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, Ham_name)
+    for coup_ind, coup in enumerate(Coups):
+        ax = axes[coup_ind]
+        ax.set_title(coup)
+        ax.set_xlabel('1 / Epochs', fontdict = myfont_s)
+        ax.set_ylabel('Coupling Coefficient', fontdict = myfont_s)
+        for T_ind in T_ind_lst:
+            T = T_range[T_ind]
+            T_name = 'T = ' + format(T, '.2f')
+            file_name = T_name + '.npy'
+            epochs_inv = np.zeros(num_snapshots)
+            coup_vals = np.zeros(num_snapshots)
+            coup_errs = np.zeros(num_snapshots)
+            for snapshot in range(num_snapshots):
+                epochs_snapshot = (snapshot + 1) * interval_epochs
+                epochs_inv[snapshot] = float(1 / epochs_snapshot)
+                epochName = 'Epochs = ' + str(epochs_snapshot)
+                vals_path = os.path.join(coup_path, epochName, 'K Means and Errors', file_name)
+                K_means_errs = np.load(vals_path)
+                coup_vals[snapshot] = K_means_errs[0, coup_ind]
+                coup_errs[snapshot] = K_means_errs[1, coup_ind]
+            ax.errorbar(epochs_inv, coup_vals, yerr = coup_errs, marker = '.', ms = 4, ls = '-', lw = 1.4, capsize = 2, ecolor = 'C7', elinewidth = 1.5, label = T_name)
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels, loc ='right', bbox_to_anchor=(1.15, 0.5))
+    plt.tight_layout(pad = 1)
+    plot_path = os.path.join('Plots', 'Couplings', 'Swendsen', nH_name + ', ' + Ham_name + ' over Epochs.jpg')
+    if os.path.isfile(plot_path):
+       os.remove(plot_path)
+    fig.savefig(plot_path,  bbox_inches = 'tight', dpi = 1200)
