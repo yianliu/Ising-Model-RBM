@@ -406,13 +406,6 @@ def ConstructHMatrix(Ham):
             print('Only two-spin couplings supported')
     return HMatrix
 
-# if __name__ == "__main__":
-#     print('main')
-#     Compute_and_Save(nH = 4, Ham = H_2, Ham_name = 'H_2', num_itr = 4, bs_n = 10)
-# Print_Final_Coups(4, 'H_2')
-# plt.matshow(ConstructHMatrix(H_2))
-# Print_Final_Coups(4, 'H_2')
-
 
 def Newton_Raphdson_at_Epoch(T, nH, bs_n, Ham, num_itr, snapshot, sample_size):
     start = time.time()
@@ -491,16 +484,17 @@ def Plot_Matrix(nH, Ham, Ham_name):
     figname = os.path.join(save_plot_path, nH_name + ', ' + Ham_name + '.jpg')
     if os.path.isfile(figname):
        os.remove(figname)
-#     fig.savefig(figname, dpi = 1200)
-# for nH in nH_list:
-#     Plot_Matrix(nH, H_2, 'H_2')
+    fig.savefig(figname, dpi = 1200)
+
 
 def Plot_Ham(Ham, Ham_name):
     Coups = [i[0].name for i in Ham]
     if len(Ham) == 4:
         fig, axes = plt.subplots(nrows = 2, ncols = 2, figsize = (7, 6))
+        legendSpacing = 1.2
     else:
         fig, axes = plt.subplots(nrows = 1, ncols = 3, figsize = (9, 4))
+        legendSpacing = 1.1
     fig.suptitle('Coupling Coefficients from the Swendsen Method', fontweight = 'bold')
     for i, ax in enumerate(fig.axes):
         coup = Coups[i]
@@ -510,7 +504,7 @@ def Plot_Ham(Ham, Ham_name):
             ax.plot(T_range, np.zeros(nt), marker = '.', ls = '-', lw = 1.4, c = 'gray', label = 'Ising')
         ax.set_xlabel('Temperature', fontdict = myfont_s)
         ax.set_ylabel(coup + ' * T')
-        for nH_ind, nH in enumerate([64]):
+        for nH_ind, nH in enumerate(nH_list):
             coup_vals = np.zeros(nt)
             coup_errs = np.zeros(nt)
             nH_name = 'nH = ' + str(nH)
@@ -524,7 +518,7 @@ def Plot_Ham(Ham, Ham_name):
             # print(coup_errs)
             ax.errorbar(T_range, coup_vals * T_range, yerr = coup_errs * T_range, marker = '.', ls = '-', lw = 1.4, capsize = 2, ecolor = 'C7', elinewidth = 1.5, label = n_name)
     handles, labels = ax.get_legend_handles_labels()
-    fig.legend(handles, labels, loc ='right', bbox_to_anchor=(1.2, 0.5))
+    fig.legend(handles, labels, loc ='right', bbox_to_anchor=(legendSpacing, 0.5))
     plt.tight_layout(pad = 1.5)
     plot_path = os.path.join('Plots', 'Couplings', 'Swendsen', Ham_name + '.jpg')
     if os.path.isfile(plot_path):
@@ -540,9 +534,9 @@ def Plot_over_Epochs(nH, Ham, Ham_name, T_ind_lst):
     coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', nH_name, Ham_name)
     for coup_ind, coup in enumerate(Coups):
         ax = axes[coup_ind]
-        ax.set_title(coup)
+        # ax.set_title(coup)
         ax.set_xlabel('1 / Epochs', fontdict = myfont_s)
-        ax.set_ylabel('Coupling Coefficient', fontdict = myfont_s)
+        ax.set_ylabel(coup)
         for T_ind in T_ind_lst:
             T = T_range[T_ind]
             T_name = 'T = ' + format(T, '.2f')
@@ -567,6 +561,7 @@ def Plot_over_Epochs(nH, Ham, Ham_name, T_ind_lst):
        os.remove(plot_path)
     fig.savefig(plot_path,  bbox_inches = 'tight', dpi = 1200)
 
-Compute_and_Save(nH = 4, Ham = H_1, Ham_name = 'H_1', num_itr = 4, bs_n = 10)
-Compute_and_Save(nH = 16, Ham = H_1, Ham_name = 'H_1', num_itr = 4, bs_n = 10)
-winsound.Beep(440,1000)
+if __name__ == "__main__":
+    Plot_over_Epochs(nH = 4, Ham = H_2, Ham_name = 'H_2', T_ind_lst = [0, 1, 3, 5, 7])
+    Plot_over_Epochs(nH = 64, Ham = H_2, Ham_name = 'H_2', T_ind_lst = [0, 1, 3, 5, 7])
+    Plot_over_Epochs(nH = 4, Ham = H_4, Ham_name = 'H_4', T_ind_lst = [0, 1, 3, 5, 7])
