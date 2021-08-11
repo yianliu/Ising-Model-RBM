@@ -360,6 +360,7 @@ H_2 = [[K_1, 0.4], [K_2, 0.1], [K_3, 0.1]]
 H_3 = [[K_1, 0.4], [K_2, 0], [K_4, 0]]
 H_4 = [[K_1, 0.4], [K_2, 0.1], [K_3, 0.1], [K_4, 0]]
 H_5 = [[K_1, 0.4], [K_1_bound, 0.1], [K_2, 0.1], [K_3, 0.1]]
+H_6 = [[K_1, 0.4], [K_1_bound, 0.1], [K_2, 0.1], [K_3, 0.1], [K_4, 0]]
 
 def Compute_and_Save(nH, Ham, Ham_name, num_itr, bs_n):
     nH_name = 'nH = ' + str(nH)
@@ -493,19 +494,22 @@ def Plot_Ham(Ham, Ham_name):
     if len(Ham) == 4:
         fig, axes = plt.subplots(nrows = 2, ncols = 2, figsize = (7, 6))
         legendSpacing = 1.15
+    elif len(Ham) == 5:
+        fig, axes = plt.subplots(nrows = 2, ncols = 3, figsize = (10, 7))
+        legendSpacing = 1.1
     else:
         fig, axes = plt.subplots(nrows = 1, ncols = 3, figsize = (9, 4))
         legendSpacing = 1.1
     fig.suptitle('Coupling Coefficients from the Swendsen Method', fontweight = 'bold')
-    for i, ax in enumerate(fig.axes):
-        coup = Coups[i]
+    for i, coup in enumerate(Coups):
+        ax = fig.axes[i]
         if coup == 'K1':
             ax.plot(T_range, np.ones(nt), marker = '.', ls = '-', lw = 1.4, c = 'gray', label = 'Ising')
         else:
             ax.plot(T_range, np.zeros(nt), marker = '.', ls = '-', lw = 1.4, c = 'gray', label = 'Ising')
         ax.set_xlabel('Temperature', fontdict = myfont_s)
         ax.set_ylabel(coup + ' * T')
-        for nH_ind, nH in enumerate(nH_list):
+        for nH_ind, nH in enumerate(nH_list[:1]):
             coup_vals = np.zeros(nt)
             coup_errs = np.zeros(nt)
             nH_name = 'nH = ' + str(nH)
@@ -592,4 +596,5 @@ def Print_Final_Coups_MCMC(Ham, Ham_name, T_ind_lst):
             print(coup.name + '* T = ' + format(val, '.5f'), u"\u00B1", format(err, '.5f'))
 # Print_Final_Coups_MCMC(H_1, 'H_1', [0, 3, 7])
 
-Plot_Ham(Ham = H_5, Ham_name = 'H_5')
+# Compute_and_Save(nH = 4, Ham = H_6, Ham_name = 'H_6', num_itr = 4, bs_n = 10)
+Plot_Ham(H_6, 'H_6')
