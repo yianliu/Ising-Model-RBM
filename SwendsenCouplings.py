@@ -328,14 +328,14 @@ def Newton_Raphdson(T, nH, bs_n, Ham, num_itr):
     K_means_errs = np.stack((np.apply_along_axis(np.mean, 0, K_lst[-1]), np.apply_along_axis(error, 0, K_lst[-1])))
     return K_means_errs, K_lst
 
-def Newton_Raphdson_MCMC(T, bs_n, Ham, num_itr):
+def Newton_Raphdson_MCMC(T, bs_n, Ham, num_itr, num_samples):
     start = time.time()
     Ham_new = Ham.copy()
     file_name = 'T = ' + format(T, '.2f') + '.npy'
     data_path = os.path.join('Data', 'Training Data', file_name)
     samples = np.load(data_path)
     np.random.shuffle(samples)
-    data_bs_sets = np.split(samples, bs_n)
+    data_bs_sets = np.split(samples[:num_samples], bs_n)
     K = np.tile(np.asarray([i[1] for i in Ham_new]), (bs_n, 1))
     K_lst = []
     for itr in range(num_itr):
@@ -359,6 +359,7 @@ H_1 = [[K_1, 0.4], [K_1_bound, 0.1], [K_2, 0.1]]
 H_2 = [[K_1, 0.4], [K_2, 0.1], [K_3, 0.1]]
 H_3 = [[K_1, 0.4], [K_2, 0], [K_4, 0]]
 H_4 = [[K_1, 0.4], [K_2, 0.1], [K_3, 0.1], [K_4, 0]]
+H_5 = [[K_1, 0.4], [K_1_bound, 0.1], [K_2, 0.1], [K_3, 0.1]]
 
 def Compute_and_Save(nH, Ham, Ham_name, num_itr, bs_n):
     nH_name = 'nH = ' + str(nH)
@@ -491,7 +492,7 @@ def Plot_Ham(Ham, Ham_name):
     Coups = [i[0].name for i in Ham]
     if len(Ham) == 4:
         fig, axes = plt.subplots(nrows = 2, ncols = 2, figsize = (7, 6))
-        legendSpacing = 1.2
+        legendSpacing = 1.15
     else:
         fig, axes = plt.subplots(nrows = 1, ncols = 3, figsize = (9, 4))
         legendSpacing = 1.1
@@ -535,7 +536,7 @@ def Plot_over_Epochs(nH, Ham, Ham_name, T_ind_lst):
     for coup_ind, coup in enumerate(Coups):
         ax = axes[coup_ind]
         # ax.set_title(coup)
-        ax.set_xlabel('1 / Epochs', fontdict = myfont_s)
+        ax.set_xlabel('1 / Epochs')
         ax.set_ylabel(coup)
         for T_ind in T_ind_lst:
             T = T_range[T_ind]
@@ -561,7 +562,34 @@ def Plot_over_Epochs(nH, Ham, Ham_name, T_ind_lst):
        os.remove(plot_path)
     fig.savefig(plot_path,  bbox_inches = 'tight', dpi = 1200)
 
-if __name__ == "__main__":
-    Plot_over_Epochs(nH = 4, Ham = H_2, Ham_name = 'H_2', T_ind_lst = [0, 1, 3, 5, 7])
-    Plot_over_Epochs(nH = 64, Ham = H_2, Ham_name = 'H_2', T_ind_lst = [0, 1, 3, 5, 7])
-    Plot_over_Epochs(nH = 4, Ham = H_4, Ham_name = 'H_4', T_ind_lst = [0, 1, 3, 5, 7])
+def Compute_and_Save_MCMC(Ham, Ham_name, num_itr, bs_n, T_ind_lst, num_samples):
+    coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', 'MCMC', Ham_name)
+    lst_path = os.path.join(coup_path, 'K List')
+    if not os.path.exists(lst_path):
+        os.makedirs(lst_path)
+    vals_path = os.path.join(coup_path, 'K Means and Errors')
+    if not os.path.exists(vals_path):
+        os.makedirs(vals_path)
+    for T_ind in T_ind_lst:
+        T = T_range[T_ind]
+        file_name = 'T = ' + format(T, '.2f') + '.npy'
+        K_means_errs, K_lst = Newton_Raphdson_MCMC(T, bs_n, Ham, num_itr, num_samples)
+        np.save(os.path.join(lst_path, file_name), K_lst)
+        np.save(os.path.join(vals_path, file_name), K_means_errs)
+        print('T = ' + format(T, '.2f') + ':', K_means_errs)
+
+# Compute_and_Save_MCMC(Ham = H_1, Ham_name = 'H_1', num_itr = 4, bs_n = 10, T_ind_lst = [0, 3, 7], num_samples = 20000)
+
+def Print_Final_Coups_MCMC(Ham, Ham_name, T_ind_lst):
+    coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', 'MCMC', Ham_name, 'K Means and Errors')
+    for T_ind in T_ind_lst:
+        T = T_range[T_ind]
+        file_name = 'T = ' + format(T, '.2f') + '.npy'
+        K_means_errs = np.load(os.path.join(coup_path, file_name)) * T
+        print('\nT = ' + format(T, '.2f'))
+        for i, [val, err] in enumerate(K_means_errs.T):
+            coup = Ham[i][0]
+            print(coup.name + '* T = ' + format(val, '.5f'), u"\u00B1", format(err, '.5f'))
+# Print_Final_Coups_MCMC(H_1, 'H_1', [0, 3, 7])
+
+Plot_Ham(Ham = H_5, Ham_name = 'H_5')
