@@ -63,6 +63,21 @@ def M(spins_multi):
     Mags = M_lst(spins_multi) / N
     return [np.mean(Mags), error(Mags)]
 
+# M__real_lst takes a list of spin configurations and returns a list of magnetisation
+# values of those configurations without changing the sign
+def M_real_lst(spins_multi):
+    M = []
+    for spins in spins_multi:
+        M.append(Mag(spins))
+    return np.asarray(M)
+
+# M takes a list of multiple spin configurations and returns a list consisting
+# of the mean and the standard error of magnetisation per spin values without abs value
+def M_real(spins_multi):
+    N = spins_multi[0].size
+    Mags = M_real_lst(spins_multi) / N
+    return [np.mean(Mags), error(Mags)]
+
 # Cv takes a list of multiple spin configurations and their corresponding
 # temperature and returns the mean and stardard error for the specific heat
 def Cv(spins_multi, T):

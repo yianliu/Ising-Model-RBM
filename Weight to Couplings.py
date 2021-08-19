@@ -140,7 +140,7 @@ for nH in nH_list:
 
 # The following code plots the nearest-neighbour couplings against expectation from Ising model
 # (reproduce fig. 11 in Cossu et al)
-
+'''
 def H_temp_dep(H_nn, T):
     H_temp = H_nn * (2 * T)
     return [np.mean(H_temp), np.std(H_temp)]
@@ -168,7 +168,7 @@ plt.tight_layout()
 figname = os.path.join(save_plot_path, 'Nearest Neighbour Comparison.jpg')
 if os.path.isfile(figname):
    os.remove(figname)
-fig.savefig(figname, bbox_inches = 'tight', dpi = 1200)
+fig.savefig(figname, bbox_inches = 'tight', dpi = 1200)'''
 
 '''
 # The following code calculates the linear terms corresponding to the magnetic field
@@ -199,7 +199,7 @@ for nH in nH_list:
         J = weight_to_linear_term(W, b, c)
         np.save(os.path.join(save_lt_couplings_path, file_name), J)'''
 
-
+'''
 # The following code plots out the linear terms and reproduces fig 12 in Cossu et al
 def J_temp_dep(J, T):
     J_temp = J * T / 8
@@ -228,4 +228,32 @@ plt.tight_layout()
 figname = os.path.join(save_plot_path, 'Linear Term Comparison.jpg')
 if os.path.isfile(figname):
    os.remove(figname)
-fig.savefig(figname, bbox_inches = 'tight', dpi = 1200)
+fig.savefig(figname, bbox_inches = 'tight', dpi = 1200)'''
+
+
+for nH in nH_list:
+    nH_name = 'nH = ' + str(nH)
+    n_name = 'n = ' + str(nH)
+    save_plot_path = os.path.join('Plots', 'Couplings', nH_name)
+    save_couplings_path = os.path.join('Data', 'RBM Parameters', 'Couplings', nH_name)
+    weight_path = os.path.join('Data', 'RBM Parameters', 'Weights', nH_name)
+    h_bias_path = os.path.join('Data', 'RBM Parameters', 'Hid Biases', nH_name)
+    fig, axes = plt.subplots(nrows =4, ncols = 2, figsize=(5,10))
+    for i, T in enumerate(T_range):
+        ax = fig.axes[i]
+        H_arr = np.zeros((num_snapshots, 64, 64))
+        T_name = 'T = ' + format(T, '.2f')
+        file_name = T_name + '.npy'
+        H_arr = np.load(os.path.join(save_couplings_path, file_name))
+        H = H_arr[-1]
+        im = ax.matshow(H, label = T_name, cmap = 'inferno')
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_title(T_name)
+    fig.suptitle(n_name, size = 18, y = 0.95)
+    plt.tight_layout(pad = 3)
+    fig.colorbar(im, ax = axes)
+    figname = os.path.join(save_plot_path, nH_name + ' All Temps.jpg')
+    if os.path.isfile(figname):
+       os.remove(figname)
+    fig.savefig(figname, dpi = 1200)

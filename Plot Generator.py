@@ -114,7 +114,7 @@ for nH in nH_list:
 
 
 # Below are for all data plots
-
+'''
 E_vals_dict = dict()
 E_errs_dict = dict()
 M_vals_dict = dict()
@@ -185,4 +185,74 @@ plt.tight_layout(pad = 1.5)
 plot_path = os.path.join('Plots', 'RBM Output', 'Thermodynamic Observables.jpg')
 if os.path.isfile(plot_path):
    os.remove(plot_path)
-fig.savefig(plot_path, bbox_inches = 'tight', dpi = 1200)
+fig.savefig(plot_path, bbox_inches = 'tight', dpi = 1200)'''
+
+# # The code below calculates the mag_real values for the training data
+# Mags_real = [] # magnetisation without abs val
+#
+# for i in range(nt):
+#     T = T_range[i]
+#     file_name = 'T = ' + format(T, '.2f') + '.npy'
+#     completeName = os.path.join('Data', 'Training Data', file_name)
+#     samples = np.load(completeName)
+#     Mags_real.append(M_real(samples))
+# [M_real_vals, M_real_errs] = np.transpose(Mags_real)
+#
+# obs_path = os.path.join('Data', 'Training Data', 'Observables')
+# np.save(os.path.join(obs_path, 'M_real_vals.npy'), M_real_vals)
+# np.save(os.path.join(obs_path, 'M_real_errs.npy'), M_real_errs)
+
+# for nH in nH_list:
+    # # Uncomment the following if plotting for an individual value of nH
+    # nH_name = 'nH = ' + str(nH)
+    #
+    # # The code below will extract observables of the corresponding dataset
+    # # and store them in the correspondingdirectory
+    #
+    # data_path = os.path.join('RBM Generated Data', nH_name)
+    # Mags_real = [] # magnetisation without abs val
+    #
+    # for i in range(nt):
+    #     T = T_range[i]
+    #     file_name = 'T = ' + format(T, '.2f') + '.npy'
+    #     completeName = os.path.join('Data', data_path, file_name)
+    #     samples = np.load(completeName)
+    #     Mags_real.append(M_real(samples))
+    # [M_real_vals, M_real_errs] = np.transpose(Mags_real)
+    #
+    # obs_path = os.path.join('Data', 'RBM Generated Data', nH_name, 'Observables')
+    # np.save(os.path.join(obs_path, 'M_real_vals.npy'), M_real_vals)
+    # np.save(os.path.join(obs_path, 'M_real_errs.npy'), M_real_errs)
+
+# Below are for all data plots
+M_real_vals_dict = dict()
+M_real_errs_dict = dict()
+
+training_data_path = os.path.join('Data', 'Training Data', 'Observables')
+M_real_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'M_real_vals.npy'))
+M_real_errs_dict['Training'] = np.load(os.path.join(training_data_path, 'M_real_errs.npy'))
+
+for nH in nH_list:
+    nH_name = 'nH = ' + str(nH)
+    n_name = 'n = ' + str(nH)
+    obs_path = os.path.join('Data', 'RBM Generated Data', nH_name, 'Observables')
+    M_real_vals_dict[n_name] = np.load(os.path.join(obs_path, 'M_real_vals.npy'))
+    M_real_errs_dict[n_name] = np.load(os.path.join(obs_path, 'M_real_errs.npy'))
+
+fig, ax = plt.subplots(figsize=(5,4))
+fig.suptitle('Overall Magnetisation', fontweight = 'bold')
+for key in M_real_vals_dict:
+    ax.errorbar(T_range, M_real_vals_dict[key], yerr = M_real_errs_dict[key], marker = 'o', ls = '-', lw = 1.3, capsize = 1.5, elinewidth = 1.3, label = key)
+
+ax.set_xlabel('T', fontdict = myfont_s)
+ax.set_ylabel('MA', fontdict = myfont_s)
+
+handles, labels = ax.get_legend_handles_labels()
+fig.legend(handles, labels, loc ='right', bbox_to_anchor=(0.95, 0.7))
+
+plt.tight_layout(pad = 1.5)
+
+# plot_path = os.path.join('Plots', 'RBM Output', 'Thermodynamic Observables.jpg')
+# if os.path.isfile(plot_path):
+#    os.remove(plot_path)
+# fig.savefig(plot_path, bbox_inches = 'tight', dpi = 1200)'''

@@ -27,6 +27,9 @@ class Coupling:
     def S(self, spins, l):
         if self.order == 2:
             return self.S_two_spins(spins, l)
+        elif self.order == 1:
+            la, lb = l
+            return spins[la, lb]
         else:
             return self.S_higher_order(spins, l)
 
@@ -109,6 +112,11 @@ class Coupling:
         print('Computed from Single-Spin Operator:', coup_from_ind)
         print('Computed from All-Spin Operator:', coup_from_all)
 
+# K_0 is the magnet field, i.e. one-spin coupling Coefficient
+def K_0_all_sites(spins):
+    return np.sum(spins)
+K_0_site_locs = ()
+K_0 = Coupling(name = 'K0', sites = K_0_site_locs, order = 1, all_sites_operator = K_0_all_sites)
 # nearest neighbour coupling
 def K_1_all_sites(spins):
     m, n = spins.shape
@@ -361,6 +369,7 @@ H_3 = [[K_1, 0.4], [K_2, 0], [K_4, 0]]
 H_4 = [[K_1, 0.4], [K_2, 0.1], [K_3, 0.1], [K_4, 0]]
 H_5 = [[K_1, 0.4], [K_1_bound, 0.1], [K_2, 0.1], [K_3, 0.1]]
 H_6 = [[K_1, 0.4], [K_1_bound, 0.1], [K_2, 0.1], [K_3, 0.1], [K_4, 0]]
+H_7 = [[K_0, 0.1], [K_1, 0.4], [K_2, 0.1]]
 
 def Compute_and_Save(nH, Ham, Ham_name, num_itr, bs_n):
     nH_name = 'nH = ' + str(nH)
@@ -582,7 +591,7 @@ def Compute_and_Save_MCMC(Ham, Ham_name, num_itr, bs_n, T_ind_lst, num_samples):
         np.save(os.path.join(vals_path, file_name), K_means_errs)
         print('T = ' + format(T, '.2f') + ':', K_means_errs)
 
-# Compute_and_Save_MCMC(Ham = H_1, Ham_name = 'H_1', num_itr = 4, bs_n = 10, T_ind_lst = [0, 3, 7], num_samples = 20000)
+Compute_and_Save_MCMC(Ham = H_7, Ham_name = 'H_7', num_itr = 4, bs_n = 10, T_ind_lst = [7], num_samples = 20000)
 
 def Print_Final_Coups_MCMC(Ham, Ham_name, T_ind_lst):
     coup_path = os.path.join('Data', 'RBM Parameters', 'Couplings Swendsen', 'MCMC', Ham_name, 'K Means and Errors')
@@ -594,7 +603,3 @@ def Print_Final_Coups_MCMC(Ham, Ham_name, T_ind_lst):
         for i, [val, err] in enumerate(K_means_errs.T):
             coup = Ham[i][0]
             print(coup.name + '* T = ' + format(val, '.5f'), u"\u00B1", format(err, '.5f'))
-# Print_Final_Coups_MCMC(H_1, 'H_1', [0, 3, 7])
-
-# Compute_and_Save(nH = 4, Ham = H_6, Ham_name = 'H_6', num_itr = 4, bs_n = 10)
-Plot_Ham(H_6, 'H_6')
