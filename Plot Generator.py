@@ -159,14 +159,14 @@ ax1.set_title('Energy', fontdict = myfont_m)
 ax1.set_xlabel('T', fontdict = myfont_s)
 ax1.set_ylabel('E', fontdict = myfont_s)
 
-ax2.set_title('Magnetisation', fontdict = myfont_m)
+ax2.set_title('Absolute Magnetisation', fontdict = myfont_m)
 ax2.set_xlabel('T', fontdict = myfont_s)
-ax2.set_ylabel('M', fontdict = myfont_s)
+ax2.set_ylabel('$|$M$|$', fontdict = myfont_s)
 
 
 ax3.set_title('Specific Heat', fontdict = myfont_m)
 ax3.set_xlabel('T', fontdict = myfont_s)
-ax3.set_ylabel('Cv', fontdict = myfont_s)
+ax3.set_ylabel('C$_v$', fontdict = myfont_s)
 
 ax4.set_title('Magetic Susceptibility', fontdict = myfont_m)
 ax4.set_xlabel('T', fontdict = myfont_s)
@@ -224,11 +224,15 @@ fig.savefig(plot_path, bbox_inches = 'tight', dpi = 1200)'''
     # np.save(os.path.join(obs_path, 'M_real_vals.npy'), M_real_vals)
     # np.save(os.path.join(obs_path, 'M_real_errs.npy'), M_real_errs)
 
-# Below are for all data plots
+
+M_vals_dict = dict()
+M_errs_dict = dict()
 M_real_vals_dict = dict()
 M_real_errs_dict = dict()
 
 training_data_path = os.path.join('Data', 'Training Data', 'Observables')
+M_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'M_vals.npy'))
+M_errs_dict['Training'] = np.load(os.path.join(training_data_path, 'M_errs.npy'))
 M_real_vals_dict['Training'] = np.load(os.path.join(training_data_path, 'M_real_vals.npy'))
 M_real_errs_dict['Training'] = np.load(os.path.join(training_data_path, 'M_real_errs.npy'))
 
@@ -236,23 +240,27 @@ for nH in nH_list:
     nH_name = 'nH = ' + str(nH)
     n_name = 'n = ' + str(nH)
     obs_path = os.path.join('Data', 'RBM Generated Data', nH_name, 'Observables')
+    M_vals_dict[n_name] = np.load(os.path.join(obs_path, 'M_vals.npy'))
+    M_errs_dict[n_name] = np.load(os.path.join(obs_path, 'M_errs.npy'))
     M_real_vals_dict[n_name] = np.load(os.path.join(obs_path, 'M_real_vals.npy'))
     M_real_errs_dict[n_name] = np.load(os.path.join(obs_path, 'M_real_errs.npy'))
 
+colors = ['C0', 'C1', 'C2', 'C3']
 fig, ax = plt.subplots(figsize=(5,4))
-fig.suptitle('Overall Magnetisation', fontweight = 'bold')
-for key in M_real_vals_dict:
-    ax.errorbar(T_range, M_real_vals_dict[key], yerr = M_real_errs_dict[key], marker = 'o', ls = '-', lw = 1.3, capsize = 1.5, elinewidth = 1.3, label = key)
+fig.suptitle('Real and Absolute Magnetisations', fontweight = 'bold')
+for keyInd, key in enumerate(M_real_vals_dict):
+    ax.errorbar(T_range, M_real_vals_dict[key], yerr = M_real_errs_dict[key], marker = '.', c = colors[keyInd], ls = '--', lw = 1.3, capsize = 1.5, elinewidth = 1.3, label = key + ', real')
+    ax.errorbar(T_range, M_vals_dict[key], yerr = M_errs_dict[key], marker = '.', ls = '-', c = colors[keyInd], lw = 1.3, capsize = 1.5, elinewidth = 1.3, label = key + ', abs')
 
 ax.set_xlabel('T', fontdict = myfont_s)
-ax.set_ylabel('MA', fontdict = myfont_s)
+ax.set_ylabel('M or $|$M$|$', fontdict = myfont_s)
 
 handles, labels = ax.get_legend_handles_labels()
-fig.legend(handles, labels, loc ='right', bbox_to_anchor=(0.95, 0.7))
+fig.legend(handles, labels, loc ='right', bbox_to_anchor=(1.3, 0.5))
 
 plt.tight_layout(pad = 1.5)
 
-# plot_path = os.path.join('Plots', 'RBM Output', 'Thermodynamic Observables.jpg')
-# if os.path.isfile(plot_path):
-#    os.remove(plot_path)
-# fig.savefig(plot_path, bbox_inches = 'tight', dpi = 1200)'''
+plot_path = os.path.join('Plots', 'RBM Output', 'Magnetisation.jpg')
+if os.path.isfile(plot_path):
+   os.remove(plot_path)
+fig.savefig(plot_path, bbox_inches = 'tight', dpi = 1200)
